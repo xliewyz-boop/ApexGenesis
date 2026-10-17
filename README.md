@@ -44,7 +44,7 @@ The React 19/Vite application lives in `frontend/`. It uses Supabase Auth and Po
 
 - Lazy route imports split page code into separate chunks. The production main chunk is about 482 KB minified (about 140 KB gzip); page bundles are loaded when needed.
 - `frontend/.env` is ignored by Git. The browser uses only `VITE_SUPABASE_URL` and the public publishable key. Never add a service-role or `sb_secret_...` key to client code.
-- The production site is `https://apex-genesis-web.vercel.app`. Its current HTTP check returns 200, but it still serves the previous build (title `Apex Genesis - Rocket League Community`). Publishing this latest local build is blocked: the Vercel API rejects deployment writes with 403 for scope `xliew`, and the local Vercel CLI is logged out. The Vercel account/project scope must be re-authorized before production deployment; do not claim these local changes are live.
+- The production site is `https://apex-genesis-web.vercel.app`. Pushing commit `2c38181` triggered a READY production deployment, but inspection showed Vercel was serving the root Electron `index.html` instead of the React frontend. Root `vercel.json` now explicitly installs/builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes; verify the next deployment before treating the web app as live. Direct Vercel API deployment calls returned 403 for scope `xliew` and the local CLI is logged out, but the Git push deployment path is working.
 
 ## Supabase and permissions
 

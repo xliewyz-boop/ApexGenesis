@@ -55,8 +55,9 @@ Both SQL migration files listed above have been applied to the configured Supaba
 - Production URL: `https://apex-genesis-web.vercel.app`.
 - Deployments are currently file-based snapshots. GitHub↔Vercel auto deploy still needs its repository/scope connection fixed.
 - Build/lint last passed: web build succeeded; oxlint had warnings (React hook/effect/exhaustive-deps), zero errors.
-- Latest deployment attempt failed: Vercel deployment API returned HTTP 403 for scope `xliew`; local `vercel whoami` reports Logged out. The production URL currently responds HTTP 200 but serves the old title/build. Local frontend changes are NOT live until the Vercel account/project scope is re-authorized and a deployment succeeds.
-- After deployment, verify the homepage, /login, /signup, /support, /admin and emitted JS/CSS assets.
+- Pushing commit `2c38181` triggered a READY production deployment, but the root project configuration served the Electron `index.html`, not the React frontend. Root `vercel.json` now builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes. Verify the next Git-triggered deployment; until its Vite assets/title are confirmed, do not claim the web frontend is live.
+- Direct Vercel API deployment returned 403 for scope `xliew` and local `vercel whoami` says Logged out, but the Git push deployment path is working.
+- After the corrected deployment, verify the homepage, /login, /signup, /support, /admin and emitted JS/CSS assets.
 - A production HTTP 200 is not proof of all workflows. Test signup/email confirmation, profile updates, rank denial for Member, team creation denial for Member, Owner role management, ticket messaging, and support status changes.
 - The old Express/SQLite prototype in `backend/` is not the production web stack and should not be deployed as-is.
 - Local-only desktop features still include player directory, tournament planner, Genesis Coin wallet, and parts of inventory/local news archive. Do not claim all data syncs across devices until migrated.
