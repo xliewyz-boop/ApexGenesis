@@ -1,86 +1,119 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex Genesis - Giriş</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        body {
-            display: flex;
-            height: 100vh;
-            align-items: center;
-            justify-content: center;
-            background-color: #0a0a0a;
-        }
-        .login-box {
-            background: #1e1e1e;
-            padding: 30px;
-            border-radius: 10px;
-            width: 300px;
-        }
-        .login-box h2 {
-            color: #00ffcc;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .login-box input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #333;
-            border-radius: 4px;
-            background: #0a0a0a;
-            color: #e0e0e0;
-        }
-        .login-box button {
-            width: 100%;
-            padding: 12px;
-            background: #00ffcc;
-            color: #0a0a0a;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .login-box button:hover {
-            background: #00e6b8;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Genesis — Güvenli giriş</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0,rgba(0,255,204,.12),transparent 45%),#080b0a;color:#eef7f3;font-family:Inter,sans-serif}
+    .auth-shell{width:min(100%,460px);padding:34px;border:1px solid #263b35;border-radius:18px;background:rgba(17,23,21,.96);box-shadow:0 24px 90px #0008}
+    .brand{font:700 1.35rem Orbitron,monospace;letter-spacing:.04em;text-align:center}.brand span{color:#00ffcc}
+    .eyebrow{text-align:center;color:#00ffcc;font-size:.68rem;font-weight:800;letter-spacing:.2em;margin:14px 0 8px}
+    h1{text-align:center;font-size:1.7rem;margin:0 0 8px}.subtitle{text-align:center;color:#96aaa2;font-size:.88rem;line-height:1.6;margin-bottom:24px}
+    form{display:grid;gap:14px}.field{display:grid;gap:7px;color:#bdcbc5;font-size:.82rem}.field input{width:100%;padding:12px 13px;border-radius:8px;border:1px solid #344740;background:#0b100e;color:#fff;outline:none}.field input:focus{border-color:#00d9ad;box-shadow:0 0 0 3px #00ffcc1a}
+    .primary{width:100%;padding:13px;border:0;border-radius:8px;background:#00ffcc;color:#07110e;font-weight:800;cursor:pointer;margin-top:4px}.primary:disabled{opacity:.55;cursor:wait}
+    .switch{width:100%;margin-top:18px;background:transparent;border:0;color:#a4bbb1;cursor:pointer}.switch strong{color:#00ffcc}
+    .status{min-height:22px;margin-top:14px;color:#9edccc;font-size:.84rem;line-height:1.5;overflow-wrap:anywhere}.status.error{color:#ff9c94}
+    .foot{text-align:center;color:#65776f;font-size:.72rem;margin-top:20px}
+    [hidden]{display:none!important}
+  </style>
 </head>
 <body>
-    <div class="login-box">
-        <h2>Apex Genesis</h2>
-        <form id="loginForm">
-            <div>
-                <label for="username">Kullanıcı Adı</label>
-                <input type="text" id="username" placeholder="Kullanıcı adınız" required>
-            </div>
-            <div>
-                <label for="password">Şifre</label>
-                <input type="password" id="password" placeholder="Şifreniz" required>
-            </div>
-            <button type="submit">Giriş Yap</button>
-        </form>
-        <p id="loginMessage" style="color:#ff6b6b; margin-top:10px; text-align:center;"></p>
-    </div>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            if (username === '' || password === '') {
-                document.getElementById('loginMessage').textContent = 'Kullanıcı adı ve şifre gereklidir.';
-                return;
+  <main class="auth-shell">
+    <div class="brand">APEX <span>GENESIS</span></div>
+    <p class="eyebrow">ROCKET LEAGUE COMMUNITY</p>
+    <h1 id="auth-title">Tekrar hoş geldin</h1>
+    <p class="subtitle" id="auth-subtitle">Web ve masaüstü uygulamalarında aynı Apex Genesis hesabını kullan.</p>
+    <form id="auth-form">
+      <label class="field" id="username-field" hidden>Kullanıcı adı
+        <input id="username" name="username" minlength="3" maxlength="24" autocomplete="nickname" pattern="[A-Za-z0-9_]+" placeholder="örn. apex_player">
+      </label>
+      <label class="field">E-posta
+        <input id="email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
+      </label>
+      <label class="field">Şifre
+        <input id="password" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="En az 8 karakter">
+      </label>
+      <button id="submit-button" class="primary" type="submit">Giriş yap</button>
+    </form>
+    <button id="switch-mode" class="switch" type="button">Hesabın yok mu? <strong>Kayıt ol</strong></button>
+    <p id="auth-status" class="status" role="status" aria-live="polite"></p>
+    <p class="foot">Güvenli oturum · Supabase Authentication</p>
+  </main>
+  <script src="js/cloud.js"></script>
+  <script>
+    (() => {
+      const form = document.getElementById('auth-form');
+      const title = document.getElementById('auth-title');
+      const subtitle = document.getElementById('auth-subtitle');
+      const usernameField = document.getElementById('username-field');
+      const usernameInput = document.getElementById('username');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const submit = document.getElementById('submit-button');
+      const switchButton = document.getElementById('switch-mode');
+      const status = document.getElementById('auth-status');
+      let mode = 'signin';
+      let busy = false;
+      function setStatus(message, isError) {
+        status.textContent = message || '';
+        status.classList.toggle('error', Boolean(isError));
+      }
+      function setMode(nextMode) {
+        mode = nextMode;
+        const signup = mode === 'signup';
+        title.textContent = signup ? 'Hesabını oluştur' : 'Tekrar hoş geldin';
+        subtitle.textContent = signup ? 'Topluluğa katıl; aynı hesap web ve masaüstünde çalışır.' : 'Web ve masaüstü uygulamalarında aynı Apex Genesis hesabını kullan.';
+        usernameField.hidden = !signup;
+        usernameInput.required = signup;
+        passwordInput.autocomplete = signup ? 'new-password' : 'current-password';
+        submit.textContent = signup ? 'Hesap oluştur' : 'Giriş yap';
+        switchButton.innerHTML = signup ? 'Zaten hesabın var mı? <strong>Giriş yap</strong>' : 'Hesabın yok mu? <strong>Kayıt ol</strong>';
+        setStatus('', false);
+      }
+      async function goToApp(user) {
+        const name = String(user?.user_metadata?.username || user?.email?.split('@')[0] || 'Oyuncu').trim();
+        localStorage.setItem('apexGenesisLoggedIn', 'true');
+        localStorage.setItem('apexGenesisUsername', name);
+        localStorage.setItem('apexGenesisProfileReady', 'true');
+        window.location.replace('index.html');
+      }
+      switchButton.addEventListener('click', () => setMode(mode === 'signin' ? 'signup' : 'signin'));
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (busy) return;
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const username = usernameInput.value.trim();
+        if (mode === 'signup' && !/^[A-Za-z0-9_]{3,24}$/.test(username)) {
+          setStatus('Kullanıcı adı 3–24 karakter olmalı; yalnızca harf, rakam ve alt çizgi kullan.', true);
+          return;
+        }
+        busy = true; submit.disabled = true; setStatus(mode === 'signup' ? 'Hesap oluşturuluyor…' : 'Giriş yapılıyor…', false);
+        try {
+          if (mode === 'signup') {
+            const result = await window.apexCloud.signUp(email, password, username);
+            if (!result.session && !result.access_token) {
+              setMode('signin');
+              setStatus('Kayıt isteği alındı. E-posta doğrulama bağlantısını aç, ardından giriş yap.', false);
+              return;
             }
-            // Simple authentication: accept any non-empty credentials
-            // In a real app, you would verify against a server
-            localStorage.setItem('apexGenesisLoggedIn', 'true');
-            localStorage.setItem('apexGenesisUsername', username);
-            // Redirect to main app
-            window.location.href = 'index.html';
-        });
-    </script>
+          } else {
+            await window.apexCloud.signIn(email, password);
+          }
+          const user = await window.apexCloud.getCurrentUser();
+          if (!user) throw new Error('Oturum doğrulanamadı. E-posta doğrulamasını kontrol et.');
+          await goToApp(user);
+        } catch (error) {
+          setStatus(error.message || 'İşlem tamamlanamadı. Bağlantını kontrol edip tekrar dene.', true);
+        } finally {
+          busy = false; submit.disabled = false;
+        }
+      });
+      window.apexCloud.getCurrentUser().then(user => { if (user) goToApp(user); }).catch(() => {});
+    })();
+  </script>
 </body>
 </html>

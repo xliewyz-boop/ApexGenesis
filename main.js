@@ -67,7 +67,7 @@ function createWindow() {
       }
     });
   }
-  win.loadURL(`${APP_SCHEME}://app/index.html`);
+  win.loadURL(`${APP_SCHEME}://app/login.html`);
 }
 
 app.whenReady().then(async () => {
@@ -146,7 +146,7 @@ app.whenReady().then(async () => {
       const body = await fs.readFile(requested);
       const type = MIME_TYPES[path.extname(requested).toLowerCase()] || 'application/octet-stream';
       const headers = { 'Content-Type': type, 'X-Content-Type-Options': 'nosniff' };
-      if (path.basename(requested).toLowerCase() === 'index.html') {
+      if (path.extname(requested).toLowerCase() === '.html') {
         headers['Content-Security-Policy'] = "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https:; frame-src https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self';";
       }
       return new Response(body, { status: 200, headers });

@@ -1,5 +1,5 @@
 <div class="tab-content profile-page">
-    <div class="profile-banner"><div><div class="section-eyebrow">PLAYER IDENTITY / LOCAL PROFILE</div><h2>Profilin</h2><p>Oyuncu kimliğini ve yerel envanterini düzenle.</p></div><span class="local-data-badge">Bu cihaz</span></div>
+    <div class="profile-banner"><div><div class="section-eyebrow">PLAYER IDENTITY / CLOUD PROFILE</div><h2>Profilin</h2><p>Oyuncu kimliğini ve yerel envanterini düzenle.</p></div><span class="local-data-badge">Supabase hesabı</span></div>
     <section class="profile-overview">
         <div class="profile-identity"><img id="profile-avatar" src="assets/avatars/default.png" alt="Oyuncu avatarı" class="avatar"><div><h2 id="profile-username">Oyuncu</h2><p id="profile-team">Takım seçilmedi</p><p id="profile-bio">Henüz biyografi eklenmedi.</p><span class="profile-member-pill" id="profile-join-date">Üyelik tarihi</span></div></div>
         <button id="edit-profile-btn" class="primary-action" type="button">Profili düzenle</button>
@@ -77,19 +77,28 @@
         if (!form.hidden) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
     document.getElementById('cancel-profile-edit').addEventListener('click', () => { document.getElementById('profile-edit-form').hidden = true; });
-    document.getElementById('profile-edit-form').addEventListener('submit', event => {
+    document.getElementById('profile-edit-form').addEventListener('submit', async event => {
         event.preventDefault();
         const username = document.getElementById('edit-username').value.trim();
         const bio = document.getElementById('edit-bio').value.trim();
         const rawAvatar = document.getElementById('edit-avatar').value.trim();
         const avatar = rawAvatar ? safeHttpUrl(rawAvatar) : '';
         const status = document.getElementById('profile-save-status');
-        if (username.length < 2 || username.length > 24) { status.textContent = 'Oyuncu adı 2–24 karakter arasında olmalı.'; return; }
+        const submit = event.currentTarget.querySelector('button[type="submit"]');
+        if (username.length < 3 || username.length > 24) { status.textContent = 'Oyuncu adı 3–24 karakter arasında olmalı.'; return; }
+        if (!/^[A-Za-z0-9_]+$/.test(username)) { status.textContent = 'Oyuncu adında yalnızca harf, rakam ve alt çizgi kullan.'; return; }
         if (rawAvatar && (!avatar || !/^https?:/i.test(avatar))) { status.textContent = 'Avatar için geçerli bir HTTP(S) bağlantısı kullan.'; return; }
-        window.coinAPI.updateProfile({ username, bio, avatar, teamId: document.getElementById('edit-team').value || null });
-        localStorage.setItem('apexGenesisUsername', username);
-        status.textContent = 'Profil bu cihazda kaydedildi.';
-        loadProfile();
+        submit.disabled = true;
+        status.textContent = 'Çevrim içi profil kaydediliyor…';
+        try {
+            const online = await window.apexCloud.saveProfile({ username, display_name: username, bio, avatar_url: avatar || null });
+            window.coinAPI.updateProfile({ username: online.username, bio: online.bio || '', avatar: online.avatar_url || '', teamId: document.getElementById('edit-team').value || null, rocketLeagueRank: online.rocket_league_rank || 'Unranked' });
+            localStorage.setItem('apexGenesisUsername', online.username);
+            status.textContent = 'Profil Supabase hesabına kaydedildi.';
+            loadProfile();
+        } catch (error) {
+            status.textContent = 'Çevrim içi kayıt başarısız: ' + (error.message || 'Bilinmeyen hata');
+        } finally { submit.disabled = false; }
     });
     document.getElementById('open-shop').addEventListener('click', () => document.querySelector('.tab-btn[data-tab="shop"]')?.click());
     loadProfile();

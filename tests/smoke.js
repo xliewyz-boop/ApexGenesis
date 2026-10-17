@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const requiredFiles = [
-  'main.js', 'preload.js', 'index.html', 'dashboard.html', 'teams.html',
+  'main.js', 'preload.js', 'index.html', 'login.html', 'js/cloud.js', 'dashboard.html', 'teams.html',
   'players.html', 'tournaments.html', 'news.html', 'training.html',
   'shop.html', 'profile.html', 'settings.html', 'admin.html',
   'css/style.css', 'js/app.js', 'js/coins.js', 'js/i18n.js', 'data/rank-training.json'
@@ -20,12 +20,12 @@ for (const file of ['teams.json', 'players.json', 'tournaments.json', 'news.json
   assert.ok(value !== undefined, `Invalid JSON: ${file}`);
 }
 
-for (const file of ['main.js', 'preload.js', 'js/app.js', 'js/coins.js', 'js/i18n.js']) {
+for (const file of ['main.js', 'preload.js', 'js/cloud.js', 'js/app.js', 'js/coins.js', 'js/i18n.js']) {
   const source = fs.readFileSync(path.join(root, file), 'utf8');
   assert.doesNotThrow(() => new vm.Script(source), `JavaScript syntax error in ${file}`);
 }
 
-for (const file of ['index.html', 'dashboard.html', 'teams.html', 'players.html', 'tournaments.html', 'news.html', 'training.html', 'shop.html', 'profile.html', 'settings.html', 'admin.html']) {
+for (const file of ['index.html', 'login.html', 'dashboard.html', 'teams.html', 'players.html', 'tournaments.html', 'news.html', 'training.html', 'shop.html', 'profile.html', 'settings.html', 'admin.html']) {
   const html = fs.readFileSync(path.join(root, file), 'utf8');
   const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   for (const [, attributes, source] of scripts) {
@@ -45,12 +45,25 @@ assert.match(main, /contextIsolation: true/);
 assert.match(main, /nodeIntegration: false/);
 assert.match(main, /webSecurity: true/);
 assert.match(main, /protocol\.handle/);
+assert.match(main, /loadURL\(`\$\{APP_SCHEME\}:\/\/app\/login\.html`\)/);
 assert.match(preload, /ALLOWED_JSON/);
 assert.doesNotMatch(preload, /invoke: \(channel, \.\.\.args\) => ipcRenderer\.invoke\(channel, \.\.\.args\)/);
 assert.match(app, /active-tab-style/);
 assert.match(app, /Isolate each tab's lexical scope/);
-assert.match(index, /Bu cihazdaki oyuncu profilini aç/);
-assert.doesNotMatch(index, /accept any non-empty credentials/i);
+assert.match(index, /apexCloud\.getCurrentUser\(\)/);
+assert.match(index, /window\.location\.replace\('login\.html'\)/);
+assert.match(index, /cloud-logout/);
+const login = fs.readFileSync(path.join(root, 'login.html'), 'utf8');
+const cloud = fs.readFileSync(path.join(root, 'js/cloud.js'), 'utf8');
+assert.match(login, /apexCloud\.signIn/);
+assert.match(login, /apexCloud\.signUp/);
+assert.match(login, /E-posta doğrulama/);
+assert.doesNotMatch(login, /accept any non-empty credentials/i);
+assert.match(cloud, /token\?grant_type=password/);
+assert.match(cloud, /token\?grant_type=refresh_token/);
+assert.match(cloud, /Authorization: 'Bearer '/);
+assert.match(cloud, /async function getProfile\(userId\)/);
+assert.match(cloud, /async function saveProfile\(fields\)/);
 assert.doesNotMatch(training, /awaitFetch|İçerik yakında eklenecek|Yakında eklenecek/);
 assert.match(training, /rank-training\.json/);
 assert.match(training, /rank-selector/);

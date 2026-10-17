@@ -40,13 +40,15 @@ The NSIS installer is written to `release/ApexGenesis-Setup-1.2.0-x64.exe`. The 
 
 The React/Vite web companion in `frontend/` is now wired to Supabase Auth and Postgres for sign-in, profiles, community posts, follows, teams, tournament registration, announcements, rank-training progress, and the virtual shop.
 
-- Database schema and RLS policies are in `supabase/migrations/20261017000000_initial_schema.sql`. This SQL must be run in the intended Supabase project before the web pages can use the tables.
+- Database schema and Row Level Security policies from `supabase/migrations/20261017000000_initial_schema.sql` have been applied to the configured Supabase project and the expected PostgREST tables returned HTTP 200 during verification.
+- The public web companion is deployed at https://apex-genesis-web.vercel.app. Its root and SPA routes (`/login`, `/signup`) and built JS/CSS assets returned HTTP 200.
+- Supabase Auth allows sign-ups and has email confirmation enabled. The Site URL and redirect allowlist include the production Vercel domain; an actual new-user email confirmation still needs an end-to-end human mailbox test.
 - Local web environment values belong in `frontend/.env`; the file is ignored by Git. Only the Supabase project URL and publishable key belong in the client.
 - Wallet transactions cannot be written directly by the browser. Shop purchases use a server-side Postgres function with balance and ownership checks.
-- A web build passing does not mean that the SQL migration has been applied, email confirmation tested, admin role assigned, or website deployed.
-- The React/Vite web companion is separate from the Electron desktop app; this update does not silently replace the desktop app's local data with cloud data.
+- The Electron desktop app now uses the same Supabase email/password account system and synchronizes the basic profile (username, bio, avatar, rank) with the web companion. Its teams, player directory, tournaments, local Genesis Coin wallet, inventory, and local admin/news features have not all been migrated to cloud storage; they remain local features for now.
+- The web admin panel uses a server-side admin role and RLS. No admin role has been assigned because no owner account has yet been verified/selected; grant it only after creating and confirming the intended account.
+- Vercel production deployment is a verified file-based snapshot. Automatic GitHub-to-Vercel deployments could not be linked because the Vercel connector returned a scope authorization error; future code changes need another deployment until that connection is repaired.
 - The official Rocket League news page returned HTTP 403 from this machine's network during validation. The desktop app tries rocketleague.com/news first and falls back to the official Rocket League Steam announcements API when blocked; the UI labels the fallback source. No sample news is fabricated.
-- The web frontend has Vercel SPA rewrite configuration. To publish it, create/select a Vercel project with root directory `frontend`, configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, and set the final HTTPS URL in Supabase Auth settings.
 - The old Express/SQLite prototype in `backend/` is not part of the online web stack and should not be deployed as-is.
 
 The previous generated seed records for teams, players, tournaments, and news were removed from the active app to avoid presenting fabricated community information as real. They are preserved under `data/legacy-seed-backup/` in the development project and are excluded from the installer.
