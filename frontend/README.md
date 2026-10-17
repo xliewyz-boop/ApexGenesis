@@ -31,6 +31,7 @@ npm run build
 - Published announcements.
 - Rank-based training lessons with per-user progress synchronization.
 - Virtual shop, inventory, and Genesis Coin ledger. Purchase operations run through the atomic `purchase_shop_item` database function; the client cannot directly write coin transactions.
+- Server-role-gated admin panel at `/admin` for publishing announcements, managing tournament status, managing shop items, and audited Genesis Coin adjustments. A role must be granted to the verified owner account in Supabase first.
 
 ## Deployment (Vercel)
 

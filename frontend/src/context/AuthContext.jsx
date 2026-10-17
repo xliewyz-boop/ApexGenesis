@@ -7,6 +7,22 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    if (!supabase || !user) {
+      setIsAdmin(false);
+      return () => { active = false; };
+    }
+    supabase.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        setIsAdmin(Boolean(data && !error));
+      })
+      .catch(() => { if (active) setIsAdmin(false); });
+    return () => { active = false; };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -58,7 +74,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signUp, logout, loading, isSupabaseConfigured }}>
+    <AuthContext.Provider value={{ user, signIn, signUp, logout, loading, isSupabaseConfigured, isAdmin }}>
       {!loading && children}
     </AuthContext.Provider>
   );

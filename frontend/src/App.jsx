@@ -11,6 +11,7 @@ import Tournaments from './pages/Tournaments.jsx';
 import Announcements from './pages/Announcements.jsx';
 import Training from './pages/Training.jsx';
 import Shop from './pages/Shop.jsx';
+import Admin from './pages/Admin.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -30,6 +31,7 @@ function AppRoutes() {
     <Route path="/announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />
     <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
     <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
+    <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes></div>;
 }

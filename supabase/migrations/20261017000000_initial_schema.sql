@@ -260,6 +260,9 @@ begin
   end if;
   perform 1 from public.profiles where id = p_user_id for update;
   if not found then raise exception 'User profile not found'; end if;
+  select coalesce(sum(amount), 0) into new_balance
+  from public.wallet_transactions where user_id = p_user_id;
+  if new_balance + p_amount < 0 then raise exception 'Wallet balance cannot become negative'; end if;
   insert into public.wallet_transactions(user_id, amount, reason)
   values (p_user_id, p_amount, trim(p_reason));
   select coalesce(sum(amount), 0) into new_balance
