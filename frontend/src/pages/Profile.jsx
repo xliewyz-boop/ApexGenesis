@@ -9,7 +9,7 @@ export default function Profile() {
   const [posts, setPosts] = useState([]);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
-  const [form, setForm] = useState({ username: '', display_name: '', bio: '' });
+  const [form, setForm] = useState({ username: '', display_name: '', bio: '', player_role: 'Flex', region: 'EU' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -19,7 +19,7 @@ export default function Profile() {
     async function load() {
       if (!supabase || !user) { setLoading(false); return; }
       const [profileRes, postsRes, followersRes, followingRes] = await Promise.all([
-        supabase.from('profiles').select('id,username,display_name,bio,avatar_url,rocket_league_rank,created_at').eq('id', user.id).single(),
+        supabase.from('profiles').select('id,username,display_name,bio,avatar_url,rocket_league_rank,player_role,region,created_at').eq('id', user.id).single(),
         supabase.from('posts').select('id,user_id,content,created_at,profiles(username,display_name,avatar_url)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', user.id),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id),
@@ -27,7 +27,7 @@ export default function Profile() {
       if (!active) return;
       if (profileRes.data) {
         setProfile(profileRes.data);
-        setForm({ username: profileRes.data.username || '', display_name: profileRes.data.display_name || '', bio: profileRes.data.bio || '' });
+        setForm({ username: profileRes.data.username || '', display_name: profileRes.data.display_name || '', bio: profileRes.data.bio || '', player_role: profileRes.data.player_role || 'Flex', region: profileRes.data.region || 'EU' });
       }
       setPosts(postsRes.data ?? []);
       setFollowers(followersRes.count ?? 0);
@@ -49,7 +49,9 @@ export default function Profile() {
         username: form.username.trim().toLowerCase(),
         display_name: form.display_name.trim(),
         bio: form.bio.trim(),
-      }).eq('id', user.id).select('id,username,display_name,bio,avatar_url,rocket_league_rank,created_at').single();
+        player_role: form.player_role,
+        region: form.region,
+      }).eq('id', user.id).select('id,username,display_name,bio,avatar_url,rocket_league_rank,player_role,region,created_at').single();
       if (error) throw error;
       setProfile(data); setMessage('Profil kaydedildi.');
     } catch (error) { setMessage(error.message || 'Profil kaydedilemedi.'); }
@@ -66,6 +68,8 @@ export default function Profile() {
       <form onSubmit={saveProfile} className="mt-6 grid gap-4 sm:grid-cols-2">
         <label className="text-sm text-slate-300">Kullanıcı adı<input required minLength={3} maxLength={24} pattern="[a-zA-Z0-9_]+" value={form.username} onChange={e=>setForm({...form,username:e.target.value})} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white"/></label>
         <label className="text-sm text-slate-300">Görünen ad<input maxLength={60} value={form.display_name} onChange={e=>setForm({...form,display_name:e.target.value})} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white"/></label>
+        <label className="text-sm text-slate-300">Oyun rolü<select value={form.player_role} onChange={e=>setForm({...form,player_role:e.target.value})} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white"><option>Flex</option><option>Striker</option><option>Playmaker</option><option>Defensive</option><option>Goalkeeper</option></select></label>
+        <label className="text-sm text-slate-300">Bölge<select value={form.region} onChange={e=>setForm({...form,region:e.target.value})} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white"><option>EU</option><option>NA</option><option>ME</option><option>OCE</option><option>SAM</option><option>APAC</option><option>Unknown</option></select></label>
         <label className="text-sm text-slate-300 sm:col-span-2">Hakkında<textarea rows={3} maxLength={280} value={form.bio} onChange={e=>setForm({...form,bio:e.target.value})} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white"/></label>
         <button disabled={saving} className="rounded-xl bg-indigo-500 px-5 py-3 font-bold hover:bg-indigo-400 disabled:opacity-50">{saving?'Kaydediliyor…':'Profili kaydet'}</button>
       </form>

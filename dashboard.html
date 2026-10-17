@@ -22,39 +22,44 @@
 </section>
 <script>
     (async function renderDashboard() {
-        const read = async (file, fallback) => {
-            try { const response = await fetch('data/' + file); if (!response.ok) throw new Error('read failed'); return await response.json(); }
-            catch { return fallback; }
+        const safeSelect = async (table, query) => {
+            try { const rows = await window.apexCloud.select(table, query); return Array.isArray(rows) ? rows : []; }
+            catch (error) { console.warn('Dashboard cloud query failed:', table, error.message); return []; }
         };
-        const readLocal = (key) => {
-            try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value : []; }
-            catch { return []; }
-        };
-        const teams = readLocal('apexGenesisTeams');
-        const players = readLocal('apexGenesisPlayers');
-        const tournaments = readLocal('apexGenesisTournaments');
-        const localNews = [];
-        document.getElementById('team-count').textContent = teams.length;
-        document.getElementById('player-count').textContent = players.length;
-        const now = Date.now();
-        const upcoming = tournaments.filter(item => item.registration !== 'completed' && new Date(item.date).getTime() >= now).sort((a,b) => new Date(a.date)-new Date(b.date));
-        document.getElementById('upcoming-tournament').textContent = upcoming.length;
-        document.getElementById('next-tournament-name').textContent = upcoming[0] ? upcoming[0].title + ' · ' + new Date(upcoming[0].date).toLocaleDateString('tr-TR') : 'Planlanmış etkinlik yok';
-        if (window.coinAPI) document.getElementById('coin-balance').textContent = window.coinAPI.getCoinBalance().toLocaleString('tr-TR');
-        const newsContainer = document.getElementById('dashboard-news');
-        const adminNews = (() => { try { return JSON.parse(localStorage.getItem('apexGenesisAdminNews') || '[]'); } catch { return []; } })();
-        const items = [...adminNews, ...(Array.isArray(localNews) ? localNews : [])].slice(0, 3);
-        if (!items.length) {
-            const empty = document.createElement('p'); empty.className = 'dashboard-empty'; empty.textContent = 'Henüz bu cihazda topluluk duyurusu kaydedilmemiş. Resmî haber akışını RL News bölümünden kontrol edebilirsin.'; newsContainer.appendChild(empty);
-        } else {
-            items.forEach(item => {
+        try {
+            const user = await window.apexCloud.getCurrentUser();
+            if (!user) { window.location.replace('login.html'); return; }
+            const [teams, players, tournaments, transactions, announcements] = await Promise.all([
+                safeSelect('teams','select=id&limit=1000'),
+                safeSelect('profiles','select=id&limit=1000'),
+                safeSelect('tournaments','select=id,name,starts_at,status,registration_open&order=starts_at.asc.nullslast&limit=1000'),
+                safeSelect('wallet_transactions','select=amount&user_id=eq.'+encodeURIComponent(user.id)+'&limit=2000'),
+                safeSelect('announcements','select=title,body,created_at&is_published=eq.true&order=created_at.desc&limit=3')
+            ]);
+            document.getElementById('team-count').textContent = teams.length;
+            document.getElementById('player-count').textContent = players.length;
+            const now = Date.now();
+            const upcoming = tournaments.filter(item => item.status === 'upcoming' && item.starts_at && new Date(item.starts_at).getTime() >= now);
+            document.getElementById('upcoming-tournament').textContent = upcoming.length;
+            document.getElementById('next-tournament-name').textContent = upcoming[0] ? upcoming[0].name + ' · ' + new Date(upcoming[0].starts_at).toLocaleDateString('tr-TR') : 'Planlanmış etkinlik yok';
+            document.getElementById('coin-balance').textContent = transactions.reduce((sum,tx)=>sum+Number(tx.amount||0),0).toLocaleString('tr-TR');
+            document.querySelector('.dashboard-section-heading .local-data-badge').textContent = 'Çevrim içi veri';
+            document.querySelectorAll('.stat-caption').forEach((node,index)=>{node.textContent=index===3?'Çevrim içi bakiye':'Supabase veritabanı';});
+            const newsContainer = document.getElementById('dashboard-news');
+            newsContainer.replaceChildren();
+            if (!announcements.length) {
+                const empty = document.createElement('p'); empty.className = 'dashboard-empty'; empty.textContent = 'Henüz yayınlanmış topluluk duyurusu yok. Rocket League haberleri için RL News bölümünü aç.'; newsContainer.appendChild(empty);
+            } else announcements.forEach(item => {
                 const row = document.createElement('article'); row.className = 'dashboard-news-item';
                 const mark = document.createElement('span'); mark.className = 'news-mark'; mark.textContent = 'AG';
                 const content = document.createElement('div');
                 const title = document.createElement('strong'); title.textContent = item.title || 'Topluluk duyurusu';
-                const desc = document.createElement('p'); desc.textContent = item.content || '';
+                const desc = document.createElement('p'); desc.textContent = item.body || '';
                 content.append(title, desc); row.append(mark, content); newsContainer.appendChild(row);
             });
+        } catch (error) {
+            console.error('Dashboard failed to load cloud data:', error);
+            document.getElementById('dashboard-news').textContent = 'Çevrim içi özet yüklenemedi. Bağlantını kontrol et.';
         }
     })();
     document.querySelectorAll('[data-go-tab]').forEach(button => button.addEventListener('click', () => {

@@ -100,7 +100,7 @@
   async function getProfile(userId) {
     const user = userId ? { id: userId } : await getCurrentUser();
     if (!user) return null;
-    const rows = await select('profiles', 'select=id,username,display_name,bio,avatar_url,rocket_league_rank&id=eq.' + encodeURIComponent(user.id) + '&limit=1');
+    const rows = await select('profiles', 'select=id,username,display_name,bio,avatar_url,rocket_league_rank,player_role,region,created_at&id=eq.' + encodeURIComponent(user.id) + '&limit=1');
     return Array.isArray(rows) ? (rows[0] || null) : null;
   }
   async function getRole(userId) {
@@ -114,9 +114,10 @@
     const user = await getCurrentUser();
     if (!user) throw new Error('Giriş yapman gerekiyor.');
     const values = {};
-    for (const key of ['username','display_name','bio','avatar_url','rocket_league_rank']) {
+    for (const key of ['username','display_name','bio','avatar_url','rocket_league_rank','player_role','region']) {
       if (Object.prototype.hasOwnProperty.call(fields || {}, key)) values[key] = fields[key];
     }
+    if (typeof values.username === 'string') values.username = values.username.trim().toLowerCase();
     const rows = await update('profiles', 'id=eq.' + encodeURIComponent(user.id), values);
     if (!Array.isArray(rows) || !rows.length) throw new Error('Çevrim içi profil güncellenemedi. Veritabanı migration ve RLS ayarlarını kontrol et.');
     return rows[0];

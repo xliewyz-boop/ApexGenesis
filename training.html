@@ -9,6 +9,7 @@
   </section>
   <section id="rank-overview" class="rank-overview" aria-live="polite"></section>
   <div class="training-section-title"><div><span class="section-eyebrow">DAILY ROUTINE</span><h3>Seviyene özel antrenmanlar</h3></div><span id="lesson-count" class="lesson-count">3 çalışma</span></div>
+  <p id="training-sync-status" class="training-sync-status" role="status">Tamamlanan antrenmanlar hesabına kaydedilir.</p>
   <div id="rank-lessons" class="rank-lessons"><div class="training-loading">Antrenman programları yükleniyor…</div></div>
   <section class="positioning-guide" aria-labelledby="positioning-title">
     <div class="section-eyebrow">TEAM PLAY / 3V3</div><h3 id="positioning-title">3v3 Pozisyon ve Rotasyon</h3>
@@ -26,6 +27,8 @@
   const rankColors={};
   let rankData=[];
   let selectedRank='GOLD';
+  let trainingUser=null;
+  let completedLessons=new Set();
   const esc=v=>window.escapeHTML(String(v??''));
   const ytSearch=q=>'https://www.youtube.com/results?search_query='+encodeURIComponent(q);
   const selector=document.getElementById('rank-selector');
@@ -37,6 +40,13 @@
       const response=await fetch('data/rank-training.json',{cache:'no-store'});
       if(!response.ok) throw new Error('HTTP '+response.status);
       rankData=await response.json();
+      try {
+        trainingUser=await window.apexCloud.getCurrentUser();
+        if(trainingUser){
+          const rows=await window.apexCloud.select('training_progress','select=lesson_id,rank,completed_at&user_id=eq.'+encodeURIComponent(trainingUser.id)+'&limit=1000');
+          completedLessons=new Set((Array.isArray(rows)?rows:[]).map(row=>row.lesson_id));
+        }
+      } catch(error) { document.getElementById('training-sync-status').textContent='İlerleme şu anda yüklenemedi; antrenman içerikleri kullanılabilir.'; }
       renderRankButtons();
       renderRank(selectedRank);
     }catch(error){lessons.innerHTML='<div class="training-empty">Antrenman programları yüklenemedi. Uygulamayı yeniden başlatıp tekrar dene.</div>';console.error(error);}
@@ -66,9 +76,23 @@
     lessons.innerHTML=rank.lessons.map((lesson,index)=>{
       const steps=lesson.steps.map(step=>'<li>'+esc(step)+'</li>').join('');
       const mistakes=lesson.mistakes.map(item=>'<li>'+esc(item)+'</li>').join('');
-      return '<article class="rank-lesson-card" style="--rank-color:'+rank.color+'"><div class="lesson-card-top"><span class="lesson-number">'+String(index+1).padStart(2,'0')+'</span><span class="lesson-duration">'+esc(lesson.duration)+'</span></div><h4>'+esc(lesson.title)+'</h4><p class="lesson-focus">'+esc(lesson.focus)+'</p><div class="lesson-panel"><h5>Çalışma adımları</h5><ol>'+steps+'</ol></div><div class="lesson-panel lesson-mistakes"><h5>Dikkat et</h5><ul>'+mistakes+'</ul></div><a class="lesson-video-link" href="'+esc(ytSearch(lesson.videoSearch))+'" target="_blank" rel="noopener noreferrer"><span class="video-play">▶</span><span><strong>Video rehberlerini bul</strong><small>YouTube · '+esc(lesson.videoSearch)+'</small></span><span class="video-arrow">↗</span></a></article>';
+      const lessonId=rank.rank.toLowerCase().replace(/\\s+/g,'-')+'-'+(index+1);
+      const completed=completedLessons.has(lessonId);
+      return '<article class="rank-lesson-card" style="--rank-color:'+rank.color+'"><div class="lesson-card-top"><span class="lesson-number">'+String(index+1).padStart(2,'0')+'</span><span class="lesson-duration">'+esc(lesson.duration)+'</span></div><h4>'+esc(lesson.title)+'</h4><p class="lesson-focus">'+esc(lesson.focus)+'</p><div class="lesson-panel"><h5>Çalışma adımları</h5><ol>'+steps+'</ol></div><div class="lesson-panel lesson-mistakes"><h5>Dikkat et</h5><ul>'+mistakes+'</ul></div><a class="lesson-video-link" href="'+esc(ytSearch(lesson.videoSearch))+'" target="_blank" rel="noopener noreferrer"><span class="video-play">▶</span><span><strong>Video rehberlerini bul</strong><small>YouTube · '+esc(lesson.videoSearch)+'</small></span><span class="video-arrow">↗</span></a><button type="button" class="lesson-complete-btn '+(completed?'is-complete':'')+'" data-lesson-id="'+esc(lessonId)+'" data-rank="'+esc(rank.rank)+'">'+(completed?'Tamamlandı ✓':'Tamamlandı olarak işaretle')+'</button></article>';
     }).join('');
   }
+  lessons.addEventListener('click',async event=>{
+    const button=event.target.closest('.lesson-complete-btn');if(!button)return;
+    if(!trainingUser){document.getElementById('training-sync-status').textContent='İlerlemeni kaydetmek için hesabınla giriş yap.';return;}
+    const lessonId=button.dataset.lessonId,rank=button.dataset.rank,wasCompleted=completedLessons.has(lessonId);button.disabled=true;
+    try{
+      if(wasCompleted) await window.apexCloud.remove('training_progress','user_id=eq.'+encodeURIComponent(trainingUser.id)+'&lesson_id=eq.'+encodeURIComponent(lessonId));
+      else await window.apexCloud.insert('training_progress',[{user_id:trainingUser.id,lesson_id:lessonId,rank}]);
+      if(wasCompleted)completedLessons.delete(lessonId);else completedLessons.add(lessonId);
+      document.getElementById('training-sync-status').textContent=wasCompleted?'Antrenman ilerlemesi geri alındı.':'Antrenman ilerlemesi hesabına kaydedildi.';
+      renderRank(selectedRank);
+    }catch(error){document.getElementById('training-sync-status').textContent='İlerleme kaydedilemedi: '+(error.message||'Bağlantı hatası');button.disabled=false;}
+  });
   window.addEventListener('apex-language-changed',()=>{const select=document.getElementById('language-select');if(select)select.value=window.apexI18n.getLanguage();});
   init();
 })();
@@ -100,6 +124,7 @@
 .training-loading,.training-empty{grid-column:1/-1;padding:28px;border:1px dashed #34443d;border-radius:12px;color:#a9b8b1;background:#111715}
 .positioning-guide{margin-top:28px;padding:clamp(18px,2.4vw,30px);border:1px solid #2b4039;border-radius:15px;background:linear-gradient(135deg,#14221f,#111615 68%);box-shadow:0 12px 30px rgba(0,0,0,.15)}
 .positioning-guide>h3{font-size:clamp(1.2rem,1.8vw,1.5rem);line-height:1.4;color:#f4f7f6;margin:0 0 10px}.guide-intro{max-width:900px;color:#b0c1bf;line-height:1.7;margin-bottom:20px}.rotation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.rotation-grid article{background:#171d1c;border:1px solid #293331;border-radius:10px;padding:18px}.guide-number{color:#00ffcc;font:700 .78rem Orbitron,monospace}.rotation-grid h4{color:#edf7f5;margin:10px 0}.rotation-grid p,.guide-callout li{color:#a9b5b3;line-height:1.65;font-size:.92rem}.guide-callout{margin-top:16px;padding:18px;border-radius:10px;background:#0c1413;border:1px solid #263b34}.guide-callout strong{color:#00ffcc}.guide-callout ul{margin:10px 0 0 18px;display:grid;gap:6px}
+.training-sync-status{min-height:1.2em;margin:0 0 14px;color:#8fd8bd;font-size:.82rem}.lesson-complete-btn{margin-top:12px;width:100%;padding:11px;border:1px solid #3a5148;border-radius:9px;background:#17241e;color:#b6f1d3;font-weight:800;cursor:pointer;transition:background .18s,transform .18s}.lesson-complete-btn:hover{transform:translateY(-1px);background:#20392d}.lesson-complete-btn.is-complete{background:#173e2a;border-color:#3a9463;color:#b9ffd4}.lesson-complete-btn:disabled{opacity:.55;cursor:wait}
 @media(max-width:1120px){.rank-selector-panel{align-items:stretch;flex-direction:column}.rank-selector{max-width:none;grid-template-columns:repeat(3,minmax(0,1fr))}.rank-lessons{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.training-heading{align-items:flex-start;flex-direction:column}.training-meta{justify-content:flex-start}.rank-lessons{grid-template-columns:minmax(0,1fr)}.rank-selector{grid-template-columns:repeat(2,minmax(0,1fr))}.rank-overview{align-items:flex-start;flex-direction:column}.rank-emblem{min-width:90px;height:72px;width:100%}.rotation-grid{grid-template-columns:1fr}}
 </style>

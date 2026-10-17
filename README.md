@@ -36,7 +36,7 @@ Build the Windows installer with `npm run dist`. The installer is written to `re
 - Fifteen locale choices remain in the app. Core navigation/shop text has been repaired to UTF-8; some older long-form locale content may still need editorial review.
 - Static tab HTML is cached in memory, stale tab loads are ignored, tab-specific timers are cleaned up, and scroll reveals are limited to content-heavy sections. Reduced-motion settings are respected.
 
-Some legacy desktop features are still local-only: player directory, tournament planner, Genesis Coin wallet, and parts of the inventory/local announcement archive. They are not yet cross-device synced. The React web shop uses the secured server-side purchase function and online ledger.
+The desktop player directory, tournament calendar/registrations, profile fields (region/game role), Genesis Coin ledger, shop purchases/inventory, daily +10 GC, membership +2 GC/day, +50 GC once per tournament registration, and training completion progress now use Supabase and sync across devices. Display preferences, notification settings, and older local announcement drafts remain device-local; published announcements and the cloud wallet are authoritative.
 
 ## Web companion
 
@@ -44,13 +44,13 @@ The React 19/Vite application lives in `frontend/`. It uses Supabase Auth and Po
 
 - Lazy route imports split page code into separate chunks. The production main chunk is about 482 KB minified (about 140 KB gzip); page bundles are loaded when needed.
 - `frontend/.env` is ignored by Git. The browser uses only `VITE_SUPABASE_URL` and the public publishable key. Never add a service-role or `sb_secret_...` key to client code.
-- The production site is `https://apex-genesis-web.vercel.app`. Pushing commit `2c38181` triggered a READY production deployment, but inspection showed Vercel was serving the root Electron `index.html` instead of the React frontend. Root `vercel.json` now explicitly installs/builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes; the corrected production deployment is now verified and live. Direct Vercel API deployment calls returned 403 for scope `xliew` and the local CLI is logged out, but the Git push deployment path is working.
+- The production site is `https://apex-genesis-web.vercel.app`. Current direct static deployment `dpl_3TJMSmLqQduLQTavsvUxiNUVmeFA` is READY; homepage, `/login`, `/signup`, `/support`, `/admin`, hashed JS/CSS assets, Support chunk, and favicon all returned HTTP 200. A rewrite-only `vercel.json` was included in the direct upload so SPA routes work; `/assets/*` uses immutable caching. Root `vercel.json` still configures the normal Git build (`frontend/` → `frontend/dist`). The local Vercel CLI is logged out; the Vercel MCP deployment route succeeded.
 
 ## Supabase and permissions
 
-The initial schema is `supabase/migrations/20261017000000_initial_schema.sql`. The permissions/support migration is `supabase/migrations/20261017010000_roles_support_performance.sql`; both have been applied to the configured Supabase project.
+The migrations `20261017000000_initial_schema.sql`, `20261017010000_roles_support_performance.sql`, and `20261017020000_desktop_cloud_sync.sql` have all been applied to the configured Supabase project.
 
-Verified after the second migration:
+Verified after the third migration:
 - All 15 application tables have Row Level Security enabled.
 - Support tables `support_tickets` and `support_messages` exist and are included in the `supabase_realtime` publication.
 - The shop's seeded badge description now reads “Topluluk başlangıç rozeti.”

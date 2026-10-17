@@ -1,6 +1,6 @@
 <div class="tab-content">
-    <h2>Yönetim Merkezi</h2>
-    <p class="admin-scope-note">Çevrim içi işlemler Supabase rolü ve RLS ile doğrulanır. Yerel haber listesi eski cihaz içi uyumluluk bölümüdür.</p>
+    <h2 id="adminWorkspaceTitle">Yönetim Merkezi</h2>
+    <p class="admin-scope-note" id="adminScopeNote">Çevrim içi işlemler Supabase rolü ve RLS ile doğrulanır.</p>
     <div class="admin-section">
       <h3>Çevrim içi rank doğrulama</h3>
       <form id="onlineRankForm" class="online-admin-form"><input id="onlineRankUsername" required placeholder="Oyuncu adı"><select id="onlineRankValue"><option>Unranked</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option><option>Diamond</option><option>Champion</option><option>Grand Champion</option><option>SSL</option></select><button type="submit">Rank kaydet</button></form>
@@ -16,12 +16,18 @@
       <form id="onlineRoleForm" class="online-admin-form"><input id="onlineRoleUsername" required placeholder="Tam kullanıcı adı"><select id="onlineRoleValue"><option value="admin">Admin</option><option value="owner">Owner</option></select><button type="submit">Rol ata</button></form>
       <p id="onlineRoleStatus" role="status"></p><div id="onlineStaffList"></div>
     </div>
-    <div class="admin-section"><h3>Canlı müşteri desteği</h3><p>Üye ticket'ları, rank doğrulama talepleri ve destek yazışmaları için çevrim içi destek masasına geç.</p><button type="button" data-go-tab="support">Destek kuyruğunu aç</button></div>
     <div class="admin-section">
+      <h3>Genesis Coin · ödül ve bakiye</h3>
+      <p>Turnuva kaydı otomatik +50 GC verir. Yerleşim, telafi veya düzeltme ödüllerini buradan güvenli şekilde ekleyebilir ya da düşürebilirsin.</p>
+      <form id="onlineWalletForm" class="online-admin-form"><input id="onlineWalletUsername" required placeholder="Oyuncu adı"><input id="onlineWalletAmount" type="number" min="-100000" max="100000" step="1" required placeholder="Coin miktarı (+/-)"><input id="onlineWalletReason" required minlength="2" maxlength="120" placeholder="Sebep: Turnuva 1. sıra ödülü"><button type="submit">Bakiyeyi güncelle</button></form>
+      <p id="onlineWalletStatus" role="status"></p>
+    </div>
+    <div class="admin-section"><h3>Canlı müşteri desteği</h3><p>Üye ticket'ları, rank doğrulama talepleri ve destek yazışmaları için çevrim içi destek masasına geç.</p><button type="button" data-go-tab="support">Destek kuyruğunu aç</button></div>
+    <div class="admin-section" hidden>
         <h3>Yerel profil durumu</h3>
         <div id="userList"></div>
     </div>
-    <div class="admin-section">
+    <div class="admin-section" hidden>
         <h3>Haber Ekle</h3>
         <form id="addNewsForm">
             <div>
@@ -40,7 +46,7 @@
         </form>
         <div id="newsAddStatus"></div>
     </div>
-    <div class="admin-section">
+    <div class="admin-section" hidden>
         <h3>Eklenen Haberler (Yerel)</h3>
         <div id="adminNewsList"></div>
     </div>
@@ -149,6 +155,8 @@
       return;
     }
     byId('ownerRoleSection').hidden = role !== 'owner';
+    byId('adminWorkspaceTitle').textContent = role === 'owner' ? 'Owner Control Center' : 'Admin Operations';
+    byId('adminScopeNote').textContent = role === 'owner' ? 'Owner: tüm yönetim araçları, rank doğrulama, duyuru yayınlama ve personel rolleri.' : 'Admin: rank doğrulama, duyuru yayınlama ve canlı üye desteği. Personel rol yönetimi yalnızca Owner yetkisindedir.';
     byId('onlineRankForm').addEventListener('submit', async event => {
       event.preventDefault(); const username=byId('onlineRankUsername').value.trim().toLowerCase(); const rank=byId('onlineRankValue').value;
       status('onlineRankStatus','Profil aranıyor…');
@@ -171,6 +179,22 @@
         byId('onlineAnnouncementForm').reset();status('onlineAnnouncementStatus','Duyuru tüm kullanıcılara yayınlandı.');
       } catch(error){status('onlineAnnouncementStatus',error.message||'Duyuru yayınlanamadı.',true);}
     });
+    byId('onlineWalletForm').addEventListener('submit',async event=>{
+      event.preventDefault();
+      const username=byId('onlineWalletUsername').value.trim().toLowerCase();
+      const amount=Number(byId('onlineWalletAmount').value);
+      const reason=byId('onlineWalletReason').value.trim();
+      status('onlineWalletStatus','Genesis Coin işlemi doğrulanıyor…');
+      try{
+        if(!Number.isInteger(amount)||amount===0||Math.abs(amount)>100000)throw new Error('Coin miktarı sıfır dışında -100000 ile 100000 arasında tam sayı olmalı.');
+        if(reason.length<2||reason.length>120)throw new Error('İşlem sebebi 2–120 karakter olmalı.');
+        const profiles=await api.select('profiles','select=id,username&username=eq.'+encodeURIComponent(username)+'&limit=1');
+        if(!Array.isArray(profiles)||!profiles[0])throw new Error('Oyuncu bulunamadı.');
+        const result=await api.rpc('admin_adjust_wallet',{p_user_id:profiles[0].id,p_amount:amount,p_reason:reason});
+        byId('onlineWalletForm').reset();
+        status('onlineWalletStatus','@'+profiles[0].username+' bakiyesi güncellendi. Yeni bakiye: '+Number(result.balance||0).toLocaleString('tr-TR')+' GC.');
+      }catch(error){status('onlineWalletStatus',error.message||'Bakiye güncellenemedi.',true);}
+    });
     if(role==='owner'){
       async function renderStaff(){
         const rows=await api.select('user_roles','select=user_id,role,created_at&order=created_at.desc&limit=100');
@@ -179,7 +203,7 @@
           const line=document.createElement('div');line.className='online-staff-row';
           const label=document.createElement('span');label.textContent=item.user_id.slice(0,8)+' · '+item.role;
           const remove=document.createElement('button');remove.type='button';remove.textContent='Rolü kaldır';
-          remove.addEventListener('click',async()=>{try{await api.remove('user_roles','user_id=eq.'+encodeURIComponent(item.user_id)+'&role=eq.'+encodeURIComponent(item.role));await renderStaff();status('onlineRoleStatus','Personel rolü kaldırıldı.');}catch(error){status('onlineRoleStatus',error.message||'Rol kaldırılamadı.',true);}});
+          remove.addEventListener('click',async()=>{try{const current=await api.getCurrentUser();if(item.user_id===current.id&&item.role==='owner')throw new Error('Kendi Owner rolünü kaldıramazsın.');await api.remove('user_roles','user_id=eq.'+encodeURIComponent(item.user_id)+'&role=eq.'+encodeURIComponent(item.role));await renderStaff();status('onlineRoleStatus','Personel rolü kaldırıldı.');}catch(error){status('onlineRoleStatus',error.message||'Rol kaldırılamadı.',true);}});
           line.append(label,remove);container.append(line);
         }
       }

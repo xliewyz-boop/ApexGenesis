@@ -6,8 +6,9 @@ Apex Genesis is a Rocket League community platform with two clients: a Windows E
 ## Repository map
 - Electron root: `main.js`, `preload.js`, `index.html`, feature HTML pages, `css/`, `js/`, `data/`.
 - Web: `frontend/src` (React 19, React Router, Vite, Tailwind CSS, Supabase JS).
-- SQL: `supabase/migrations/20261017000000_initial_schema.sql` then `supabase/migrations/20261017010000_roles_support_performance.sql`.
+- SQL: `supabase/migrations/20261017000000_initial_schema.sql`, `supabase/migrations/20261017010000_roles_support_performance.sql`, and `supabase/migrations/20261017020000_desktop_cloud_sync.sql` (all applied).
 - Tests: `tests/smoke.js`; root command `npm test`.
+- Missing-work checklist and truthful limitations: `EKSİKLER.md`.
 - Build web: `cd frontend && npm run build && npm run lint`.
 - Build Windows installer: `npm run dist`.
 
@@ -18,10 +19,13 @@ Apex Genesis is a Rocket League community platform with two clients: a Windows E
 - Electron protocol is `apex://app/`; renderer uses `contextIsolation: true`, `nodeIntegration: false`, and a constrained preload bridge.
 
 ## Database / migration status
-Both SQL migration files listed above have been applied to the configured Supabase project.
+All three SQL migration files listed above have been applied to the configured Supabase project.
 - 15 application tables have RLS enabled.
 - `support_tickets` and `support_messages` exist and are included in `supabase_realtime`.
 - The shop seed description for Apex Genesis Badge is corrected to UTF-8 Turkish: “Topluluk başlangıç rozeti.”
+- Profile columns `player_role` and `region`, tournament `registration_open`, and the `claim_daily_reward()` RPC exist in production.
+- Desktop players/profile, tournaments/registrations, cloud wallet/shop/inventory, dashboard metrics, and training progress use Supabase instead of per-device localStorage.
+- Wallet rewards are server-side: daily +10 GC, +2 GC/day membership loyalty, and +50 GC once per tournament registration. Admin/Owner can adjust a wallet with a required reason; database constraints prevent duplicate daily/tournament rewards.
 - A confirmed project owner account has been granted `user_roles.role='owner'`.
 - RLS/policy verification query confirmed support table RLS and publication membership. Do not assume an interactive ticket exchange has been end-to-end tested until tested from Member and staff accounts.
 
@@ -53,14 +57,15 @@ Both SQL migration files listed above have been applied to the configured Supaba
 
 ## Deployment status and caveats
 - Production URL: `https://apex-genesis-web.vercel.app`.
-- GitHub main pushes trigger Vercel deployments. The latest production deployment from commit 6c3cc22 is READY and serves the Vite frontend.
-- Build/lint last passed: web build succeeded; oxlint had warnings (React hook/effect/exhaustive-deps), zero errors.
-- Root `vercel.json` builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes. The latest Git-triggered production deployment reached READY. Verified production homepage, hashed JS/CSS assets, Login chunk, and Support chunk return HTTP 200. Production JS contains the configured Supabase project URL and public publishable-key prefix.
-- Direct Vercel API deployment returned 403 for scope `xliew` and local `vercel whoami` says Logged out, but Git push deployment is working. Continue deployment through pushes to GitHub `main`.
+- Current production deployment: `dpl_3TJMSmLqQduLQTavsvUxiNUVmeFA` (READY, direct static upload, alias `apex-genesis-web.vercel.app`). The Vite build from the local frontend was uploaded with a rewrite-only `vercel.json` and immutable caching for `/assets/*`.
+- Production HTTP checks passed: `/`, `/login`, `/signup`, `/support`, `/admin`, main JS, CSS, Support chunk, and favicon all returned HTTP 200. Before adding the rewrite config, SPA routes returned 404; the rewrite was added and re-tested successfully.
+- Build/lint last passed: web build succeeded; oxlint had 25 warnings (React hook/effect/exhaustive-deps), zero errors.
+- Root `vercel.json` builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes for Git-based deployments. The current direct deployment reflects the generated frontend dist; root Electron/docs changes still need GitHub push to be preserved in repository history and trigger a standard Git deployment.
+- The connected Vercel MCP could deploy without a Git token, but local `vercel whoami` reports Logged out. Do not claim the local CLI is authenticated; direct MCP deployments are currently verified.
 - HTTP smoke checks do not prove all authenticated workflows. Still test signup/email confirmation, profile updates, Member rank denial, Member team-creation denial, Owner role management, and real-time ticket exchange with separate Member/staff accounts.
 - A production HTTP 200 is not proof of all workflows. Test signup/email confirmation, profile updates, rank denial for Member, team creation denial for Member, Owner role management, ticket messaging, and support status changes.
 - The old Express/SQLite prototype in `backend/` is not the production web stack and should not be deployed as-is.
-- Local-only desktop features still include player directory, tournament planner, Genesis Coin wallet, and parts of inventory/local news archive. Do not claim all data syncs across devices until migrated.
+- Display preferences, notification settings, and older local announcement drafts remain device-local by design; published announcements and cloud wallet are authoritative. Some legacy local profile/cache values remain but must not be used as authorization or the source of truth.
 
 ## Security notes
 - Never expose service-role credentials to client apps.

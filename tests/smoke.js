@@ -8,7 +8,11 @@ const requiredFiles = [
   'main.js', 'preload.js', 'index.html', 'login.html', 'js/cloud.js', 'dashboard.html', 'support.html', 'teams.html',
   'players.html', 'tournaments.html', 'news.html', 'training.html',
   'shop.html', 'profile.html', 'settings.html', 'admin.html',
-  'css/style.css', 'js/app.js', 'js/coins.js', 'js/i18n.js', 'data/rank-training.json'
+  'css/style.css', 'js/app.js', 'js/coins.js', 'js/i18n.js', 'data/rank-training.json',
+  'GPT.md', 'EKSİKLER.md', 'README.md', 'vercel.json',
+  'supabase/migrations/20261017000000_initial_schema.sql',
+  'supabase/migrations/20261017010000_roles_support_performance.sql',
+  'supabase/migrations/20261017020000_desktop_cloud_sync.sql'
 ];
 
 for (const file of requiredFiles) {
@@ -86,6 +90,36 @@ assert.match(main, /ISteamNews\/GetNewsForApp/);
 assert.match(news, /Örnek haber gösterilmiyor/);
 
 const migration = fs.readFileSync(path.join(root, 'supabase/migrations/20261017010000_roles_support_performance.sql'), 'utf8');
+const cloudSyncMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20261017020000_desktop_cloud_sync.sql'), 'utf8');
+assert.match(cloudSyncMigration, /add column if not exists player_role/);
+assert.match(cloudSyncMigration, /add column if not exists registration_open/);
+assert.match(cloudSyncMigration, /create or replace function public\.claim_daily_reward/);
+assert.match(cloudSyncMigration, /wallet_daily_reward_unique_idx/);
+assert.match(cloudSyncMigration, /wallet_tournament_reward_unique_idx/);
+assert.match(cloudSyncMigration, /Membership loyalty bonus/);
+assert.match(cloudSyncMigration, /add column if not exists image_url/);
+const playersPage = fs.readFileSync(path.join(root, 'players.html'), 'utf8');
+const tournamentsPage = fs.readFileSync(path.join(root, 'tournaments.html'), 'utf8');
+const shopPage = fs.readFileSync(path.join(root, 'shop.html'), 'utf8');
+const profilePage = fs.readFileSync(path.join(root, 'profile.html'), 'utf8');
+const dashboardPage = fs.readFileSync(path.join(root, 'dashboard.html'), 'utf8');
+const trainingPage = fs.readFileSync(path.join(root, 'training.html'), 'utf8');
+const adminPage = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
+assert.match(playersPage, /apexCloud\.select\('profiles'/);
+assert.doesNotMatch(playersPage, /apexGenesisPlayers/);
+assert.match(tournamentsPage, /apexCloud\.insert\('tournaments'/);
+assert.match(tournamentsPage, /registration_open/);
+assert.doesNotMatch(tournamentsPage, /apexGenesisTournaments/);
+assert.match(shopPage, /purchase_shop_item/);
+assert.match(shopPage, /claim_daily_reward/);
+assert.match(profilePage, /wallet_transactions/);
+assert.match(profilePage, /player_role/);
+assert.match(dashboardPage, /safeSelect\('tournaments'/);
+assert.match(trainingPage, /training_progress/);
+assert.match(adminPage, /Owner Control Center/);
+assert.match(adminPage, /image_url/);
+assert.match(adminPage, /Kendi Owner rolünü kaldıramazsın/);
+assert.match(adminPage, /admin_adjust_wallet/);
 assert.match(migration, /alter table public\.support_tickets enable row level security/i);
 assert.match(migration, /alter table public\.support_messages enable row level security/i);
 assert.match(migration, /create or replace function public\.protect_profile_rank/i);
@@ -106,4 +140,4 @@ assert.match(webApp, /lazy\(/, 'Web routes should be lazy-loaded for faster init
 const supportPage = fs.readFileSync(path.join(root, 'frontend/src/pages/Support.jsx'), 'utf8');
 assert.match(supportPage, /postgres_changes/, 'Web support should subscribe to live database changes');
 
-console.log(`Apex Genesis smoke tests passed: ${requiredFiles.length} required files, 8 JSON files, 15 locale options, six rank tracks, Electron security baseline, lazy routes, UTF-8 shop text, support/RLS guardrails, project handoff, and news refresh checks.`);
+console.log(`Apex Genesis smoke tests passed: ${requiredFiles.length} required files, 8 JSON files, 15 locale options, six rank tracks, Electron security baseline, cloud-synced desktop pages, daily reward guardrails, lazy routes, UTF-8 shop text, support/RLS guardrails, project handoff, and news refresh checks.`);
