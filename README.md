@@ -44,7 +44,7 @@ The React 19/Vite application lives in `frontend/`. It uses Supabase Auth and Po
 
 - Lazy route imports split page code into separate chunks. The production main chunk is about 482 KB minified (about 140 KB gzip); page bundles are loaded when needed. Root Vercel configuration gives hashed `/assets/*` files a one-year immutable cache while the HTML remains revalidated.
 - `frontend/.env` is ignored by Git. The browser uses only `VITE_SUPABASE_URL` and the public publishable key. Never add a service-role or `sb_secret_...` key to client code.
-- The production site is `https://apex-genesis-web.vercel.app`. The latest Git-triggered deployment from `main` reached READY. Homepage, `/login`, `/signup`, `/support`, `/admin`, hashed JS/CSS assets all returned HTTP 200 after deployment. Root `vercel.json` builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes. A direct static deployment remains as a rollback candidate. The local Vercel CLI is logged out; deployment used the connected Vercel integration.
+- The production site is `https://apex-genesis-web.vercel.app`. The latest Git-triggered deployment from `main` reached READY. Homepage, `/login`, `/signup`, `/support`, `/admin`, hashed JS/CSS assets all returned HTTP 200 after deployment. Root `vercel.json` builds `frontend/`, publishes `frontend/dist`, rewrites SPA routes, and gives hashed assets a one-year immutable cache. The latest Git-triggered production deployment reached READY. The local Vercel CLI is logged out and direct Vercel API deploy/list calls may return 403 for the account scope; committing to GitHub `main` through the connected GitHub integration successfully triggers the Vercel build.
 
 ## Supabase and permissions
 

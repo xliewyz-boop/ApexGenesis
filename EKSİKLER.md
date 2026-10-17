@@ -52,7 +52,7 @@ Son gözden geçirme: 17 Ekim 2026. Bu liste tamamlanan işleri ve kalan, dış 
 
 ## Yetki/erişim gerektirenler
 
-- Vercel MCP ile statik üretim dağıtımı başarılı; yerel Vercel CLI oturumu ise çıkış yapmış durumda. Son kaynak değişikliklerini GitHub `main` dalına göndermek, standart Git tabanlı build/deploy geçmişini korumak için ayrıca gerekli.
+- Yerel Vercel CLI oturumu çıkış yapmış durumda; doğrudan Vercel deploy/list API çağrıları hesap scope `xliew` için 403 döndü. GitHub `main` dalını bağlı GitHub entegrasyonu üzerinden güncellemek çalışıyor ve Vercel Git-triggered production build'ini otomatik başlatıyor; son dağıtım READY oldu.
 - Kod imzalama için geçerli Windows publisher sertifikası gerekir.
 - Harici Rocket League bracket entegrasyonu için uygun sağlayıcı ve API erişimi gerekir.
 
