@@ -1,0 +1,18 @@
+[
+  {
+    "id": "news1",
+    "title": "Rocket League Yeni Sezon Başladı",
+    "content": "Rocket League'nin yeni compétitif sezonu başladı, yeni ödüller ve mekanikler eklendi.",
+    "image": "assets/images/news1.jpg",
+    "date": "2026-10-01T12:00:00Z",
+    "source": "Rocket League Resmi Blog"
+  },
+  {
+    "id": "news2",
+    "title": "Apex Genesis Turnuvası Açıklandı",
+    "content": "Apex Genesis topluluk tarafından düzenlenen ilk online turnuva açıklama yapıldı.",
+    "image": "assets/images/news2.jpg",
+    "date": "2026-09-25T10:00:00Z",
+    "source": "Topluluk Duyurusu"
+  }
+]

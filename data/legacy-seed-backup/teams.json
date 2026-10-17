@@ -1,0 +1,22 @@
+[
+  {
+    "id": "team1",
+    "name": "Apex Genesis",
+    "logo": "assets/logos/apex-genesis.png",
+    "color": "#00ffcc",
+    "roster": ["player1", "player2", "player3"],
+    "wins": 15,
+    "losses": 5,
+    "coinBalance": 2500
+  },
+  {
+    "id": "team2",
+    "name": "Turbo Titans",
+    "logo": "assets/logos/turbo-titans.png",
+    "color": "#ff6b6b",
+    "roster": ["player4", "player5", "player6"],
+    "wins": 12,
+    "losses": 8,
+    "coinBalance": 1800
+  }
+]

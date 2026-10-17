@@ -1,0 +1,28 @@
+[
+  {
+    "id": "player1",
+    "username": "Nitro",
+    "teamId": "team1",
+    "role": "Striker",
+    "rank": "Champion",
+    "stats": {
+      "goals": 85,
+      "assists": 42,
+      "saves": 20,
+      "shots": 150
+    }
+  },
+  {
+    "id": "player2",
+    "username": "Rocket",
+    "teamId": "team1",
+    "role": "Caps",
+    "rank": "Diamond",
+    "stats": {
+      "goals": 60,
+      "assists": 55,
+      "saves": 30,
+      "shots": 120
+    }
+  }
+]

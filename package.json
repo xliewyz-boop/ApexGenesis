@@ -1,0 +1,82 @@
+{
+  "name": "apexgenesis",
+  "version": "1.2.0",
+  "description": "Apex Genesis Rocket League community desktop application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node tests/smoke.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "keywords": [
+    "apex-genesis",
+    "rocket-league",
+    "esports"
+  ],
+  "author": "Apex Genesis",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.apexgenesis.desktop",
+    "productName": "Apex Genesis",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "dashboard.html",
+      "teams.html",
+      "players.html",
+      "tournaments.html",
+      "news.html",
+      "training.html",
+      "shop.html",
+      "profile.html",
+      "settings.html",
+      "admin.html",
+      "css/**/*",
+      "js/**/*",
+      "data/**/*",
+      "assets/**/*",
+      "!data/legacy-seed-backup/**/*",
+      "!backend/.env",
+      "!backend/**/*.log",
+      "!backend/database.db",
+      "!backend/node_modules/**/*",
+      "!backend/**/*",
+      "!frontend/**/*",
+      "!node_modules/**/*",
+      "!release/**/*",
+      "!tests/**/*",
+      "!*.log"
+    ],
+    "win": {
+      "icon": "assets/logos/apex-genesis.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "ApexGenesis-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Apex Genesis"
+    },
+    "publish": null
+  }
+}

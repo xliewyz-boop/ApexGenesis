@@ -1,0 +1,18 @@
+[
+  {
+    "id": "item1",
+    "name": "Genesis Elite Frame",
+    "price": 500,
+    "type": "profile_frame",
+    "description": "Profilinizi şeffaf mavi bir çerçeveyle süsleyin.",
+    "image": "assets/items/frame1.png"
+  },
+  {
+    "id": "item2",
+    "name": "Champion Badge",
+    "price": 250,
+    "type": "badge",
+    "description": "Şampiyonluk unvanını gösteren rozet.",
+    "image": "assets/images/badge1.png"
+  }
+]

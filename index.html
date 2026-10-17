@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Genesis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <header>
+                <h1>Apex Genesis</h1>
+            </header>
+            <nav class="menu">
+                <button data-tab="dashboard" class="tab-btn active">Dashboard</button>
+                <button data-tab="teams" class="tab-btn">Takımlar</button>
+                <button data-tab="players" class="tab-btn">Oyuncular</button>
+                <button data-tab="tournaments" class="tab-btn">Turnuvalar</button>
+                <button data-tab="news" class="tab-btn">RL News</button>
+                <button data-tab="training" class="tab-btn">Antrenman</button>
+                <button data-tab="shop" class="tab-btn">Mağaza</button>
+                <button data-tab="profile" class="tab-btn">Profil</button>
+                <button data-tab="settings" class="tab-btn">Ayarlar</button>
+                <button data-tab="admin" class="tab-btn">Yönetim</button>
+            </nav>
+        </aside>
+        <main class="content" id="content"></main>
+    </div>
+
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h2>Apex Genesis</h2>
+            <p class="profile-mode-note">Bu cihazdaki oyuncu profilini aç</p>
+            <form id="loginForm">
+                <div>
+                    <label for="loginUsername">Oyuncu adı</label>
+                    <input type="text" id="loginUsername" placeholder="Oyuncu adını gir" minlength="2" maxlength="24" autocomplete="nickname" required>
+                </div>
+                <button type="submit">Devam Et</button>
+            </form>
+            <p id="loginMessage" style="color:#ff6b6b; margin-top:10px; text-align:center;"></p>
+        </div>
+    </div>
+
+    <script>
+        // Shared HTML escaping for all data-driven views. User content must never be injected as raw HTML.
+        window.escapeHTML = function (value) {
+            return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[character]);
+        };
+        window.safeHttpUrl = function (value) {
+            try {
+                const url = new URL(String(value ?? ''), window.location.href);
+                return ['https:', 'http:', 'apex:'].includes(url.protocol) ? url.href : '';
+            } catch {
+                return '';
+            }
+        };
+    </script>
+    <script src="js/coins.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Login handling
+        document.addEventListener('DOMContentLoaded', () => {
+            const overlay = document.getElementById('loginOverlay');
+            const loginForm = document.getElementById('loginForm');
+            const loginMessage = document.getElementById('loginMessage');
+
+            function checkProfile() {
+                const ready = localStorage.getItem('apexGenesisProfileReady') === 'true';
+                overlay.style.display = ready ? 'none' : 'flex';
+                if (ready) {
+                    const username = localStorage.getItem('apexGenesisUsername') || 'Oyuncu';
+                    if (window.coinAPI) {
+                        window.coinAPI.updateProfile({ username });
+                        if (!window.apexBonusesApplied) {
+                            window.coinAPI.applyAllBonuses();
+                            window.apexBonusesApplied = true;
+                        }
+                    }
+                }
+            }
+
+            loginForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const username = document.getElementById('loginUsername').value.trim();
+                if (username.length < 2 || username.length > 24) {
+                    loginMessage.textContent = 'Oyuncu adı 2–24 karakter arasında olmalı.';
+                    return;
+                }
+                localStorage.setItem('apexGenesisProfileReady', 'true');
+                localStorage.setItem('apexGenesisUsername', username);
+                if (window.coinAPI) window.coinAPI.updateProfile({ username });
+                loginMessage.textContent = '';
+                checkProfile();
+            });
+
+            // This is a local desktop profile, not an online account login.
+            const savedName = localStorage.getItem('apexGenesisUsername');
+            if (savedName) document.getElementById('loginUsername').value = savedName;
+            checkProfile();
+        });
+    </script>
+</body>
+</html>

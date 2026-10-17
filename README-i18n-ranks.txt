@@ -1,0 +1,1 @@
+Added UI language selector for 15 locales and rank-specific training content for Gold, Platinum, Diamond, Champion, Grand Champion, and SSL. Training video links use curated YouTube search queries to avoid inventing or embedding unverified video IDs.

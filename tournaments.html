@@ -1,0 +1,101 @@
+<div class="tab-content directory-page">
+    <div class="directory-header"><div><div class="section-eyebrow">COMPETITIVE / EVENTS</div><h2>Turnuvalar</h2><p>Turnuva takvimini ve yerel katılım kayıtlarını yönet. Resmî bracket veya online eşleştirme henüz bağlı değil.</p></div><span class="local-data-badge">Yerel etkinlikler</span></div>
+    <form id="tournament-form" class="editor-form">
+        <h3>Turnuva oluştur</h3>
+        <div class="form-grid"><label>Turnuva adı<input id="tournament-title" maxlength="70" required placeholder="Etkinlik adı"></label><label>Başlangıç zamanı<input id="tournament-date" type="datetime-local" required></label><label>Format<select id="tournament-format"><option>3v3</option><option>2v2</option><option>1v1</option><option>Özel format</option></select></label><label>Kayıt durumu<select id="tournament-status"><option value="open">Kayıt açık</option><option value="closed">Kayıt kapalı</option></select></label></div>
+        <button type="submit" class="primary-action">Turnuva kaydet</button><p id="tournament-form-status" class="form-status" role="status"></p>
+    </form>
+    <div class="directory-toolbar"><h3>Etkinlik takvimi <span id="tournament-total" class="count-pill">0</span></h3><select id="tournament-filter" aria-label="Turnuva filtresi"><option value="all">Tüm turnuvalar</option><option value="upcoming">Yaklaşan</option><option value="past">Geçmiş</option></select></div>
+    <div id="tournaments-list" class="directory-grid"></div>
+</div>
+<script>
+    const TOURNAMENT_KEY = 'apexGenesisTournaments';
+    let tournamentData = [];
+    function readTournaments() { try { const data = JSON.parse(localStorage.getItem(TOURNAMENT_KEY) || '[]'); return Array.isArray(data) ? data : []; } catch { return []; } }
+    function saveTournaments() { localStorage.setItem(TOURNAMENT_KEY, JSON.stringify(tournamentData)); }
+    function renderTournaments() {
+        const container = document.getElementById('tournaments-list');
+        const filter = document.getElementById('tournament-filter').value;
+        const now = Date.now();
+        const filtered = tournamentData.filter(item => {
+            const past = new Date(item.date).getTime() < now;
+            return filter === 'all' || (filter === 'past' ? past : !past);
+        }).sort((a,b) => new Date(a.date)-new Date(b.date));
+        document.getElementById('tournament-total').textContent = filtered.length;
+        container.replaceChildren();
+        if (!filtered.length) {
+            const empty = document.createElement('div'); empty.className = 'directory-empty';
+            empty.innerHTML = '<strong>Bu filtrede etkinlik bulunamadı.</strong><p>İlk turnuvanı yukarıdaki formdan oluşturabilirsin.</p>';
+            container.appendChild(empty); return;
+        }
+        filtered.forEach(item => {
+            const card = document.createElement('article'); card.className = 'directory-card tournament-record';
+            const top = document.createElement('div'); top.className = 'directory-card-top';
+            const mark = document.createElement('div'); mark.className = 'team-mark'; mark.textContent = item.format || 'RL';
+            const status = document.createElement('span'); status.className = 'rank-pill'; status.textContent = new Date(item.date).getTime() < now ? 'Tarihi geçti' : (item.registration === 'open' ? 'Kayıt açık' : 'Kayıt kapalı');
+            top.append(mark, status);
+            const title = document.createElement('h3'); title.textContent = item.title;
+            const date = document.createElement('p'); const d = new Date(item.date); date.textContent = Number.isNaN(d.getTime()) ? 'Tarih belirtilmedi' : d.toLocaleString('tr-TR');
+            const count = document.createElement('p'); count.textContent = (Array.isArray(item.participants) ? item.participants.length : 0) + ' yerel katılım kaydı';
+            const actions = document.createElement('div'); actions.className = 'tournament-actions';
+            const username = localStorage.getItem('apexGenesisUsername');
+            const joined = Array.isArray(item.participants) && item.participants.includes(username);
+            const join = document.createElement('button'); join.type = 'button'; join.className = 'primary-action'; join.textContent = joined ? 'Katılımı iptal et' : 'Katılım kaydet';
+            join.disabled = !username || item.registration !== 'open' || new Date(item.date).getTime() < now;
+            join.title = !username ? 'Önce yerel profil oluştur' : '';
+            join.addEventListener('click', () => {
+                if (!username) return;
+                item.participants = Array.isArray(item.participants) ? item.participants : [];
+                item.participants = joined ? item.participants.filter(name => name !== username) : [...item.participants, username];
+                saveTournaments(); renderTournaments();
+            });
+            const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'danger-action'; remove.textContent = 'Sil';
+            remove.addEventListener('click', () => { if (!confirm('“' + item.title + '” etkinliğini bu cihazdan silmek istiyor musun?')) return; tournamentData = tournamentData.filter(entry => entry.id !== item.id); saveTournaments(); renderTournaments(); });
+            actions.append(join, remove); card.append(top, title, date, count, actions); container.appendChild(card);
+        });
+    }
+    document.getElementById('tournament-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const title = document.getElementById('tournament-title').value.trim();
+        const dateValue = document.getElementById('tournament-date').value;
+        const date = new Date(dateValue);
+        const status = document.getElementById('tournament-form-status');
+        if (title.length < 3 || Number.isNaN(date.getTime())) { status.textContent = 'Turnuva adı ve geçerli tarih gerekli.'; return; }
+        if (date.getTime() < Date.now()) { status.textContent = 'Başlangıç zamanı gelecekte olmalı.'; return; }
+        tournamentData.unshift({ id: crypto.randomUUID(), title, date: date.toISOString(), format: document.getElementById('tournament-format').value, registration: document.getElementById('tournament-status').value, participants: [], createdAt: new Date().toISOString() });
+        saveTournaments(); renderTournaments(); event.target.reset(); status.textContent = 'Turnuva bu cihazda kaydedildi.';
+    });
+    document.getElementById('tournament-filter').addEventListener('change', renderTournaments);
+    tournamentData = readTournaments(); renderTournaments();
+</script>
+<style>
+    .directory-page { display:block; padding:0; }
+    .directory-header { display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:22px; }
+    .directory-header p { color:#9eafaa; line-height:1.6; }
+    .local-data-badge,.rank-pill,.count-pill { display:inline-flex; border:1px solid #34423e; border-radius:999px; color:#a5b5b0; padding:6px 10px; font-size:.72rem; white-space:nowrap; }
+    .editor-form { background:linear-gradient(145deg,#171e1c,#121615); border:1px solid #293531; border-radius:12px; padding:22px; margin-bottom:26px; }
+    .editor-form h3,.directory-toolbar h3 { color:#eaf3ef; margin-bottom:16px; }
+    .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+    .form-grid label { color:#9eafaa; display:grid; gap:7px; font-size:.82rem; }
+    .form-grid input,.form-grid select,.directory-toolbar select { width:100%; min-width:0; border:1px solid #34413d; border-radius:7px; background:#0c100f; color:#edf5f1; padding:11px; }
+    .primary-action,.danger-action { border:0; border-radius:7px; padding:10px 14px; cursor:pointer; font-weight:800; }
+    .primary-action { background:var(--primary-color); color:#07110f; }
+    .primary-action:disabled { opacity:.45; cursor:not-allowed; }
+    .danger-action { margin-top:14px; background:#2a1918; color:#ffaaa0; border:1px solid #57312d; }
+    .form-status { display:inline-block; margin-left:12px; color:#91d8c5; font-size:.82rem; }
+    .directory-toolbar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; }
+    .directory-toolbar h3 { margin:0; }
+    .directory-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .directory-card { min-width:0; padding:20px; border-radius:12px; background:linear-gradient(145deg,#1a2220,#131716); border:1px solid #28322f; }
+    .directory-card-top { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:18px; }
+    .team-mark { width:52px; height:52px; display:flex; align-items:center; justify-content:center; border:1px solid #236657; border-radius:12px; background:#12302a; color:var(--primary-color); font:800 .8rem Orbitron,monospace; }
+    .directory-card h3 { color:#edf5f2; margin-bottom:9px; overflow-wrap:anywhere; }
+    .directory-card p { color:#a1b0ab; font-size:.88rem; line-height:1.6; margin:7px 0; }
+    .directory-empty { grid-column:1/-1; padding:28px; border:1px dashed #35433e; border-radius:12px; color:#a3b1ac; }
+    .directory-empty strong { color:#e7f0ec; }
+    .directory-empty p { margin-top:8px; }
+    .tournament-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .tournament-actions .danger-action { margin-top:0; }
+    @media(max-width:1000px) { .directory-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:650px) { .form-grid,.directory-grid { grid-template-columns:1fr; } .directory-header,.directory-toolbar { align-items:flex-start; flex-direction:column; } .form-status { display:block; margin:12px 0 0; } }
+</style>

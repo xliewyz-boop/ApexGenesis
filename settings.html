@@ -1,0 +1,187 @@
+<div class="tab-content">
+    <h2>Ayarlar</h2>
+    <div class="settings-group language-settings">
+        <h3>Dil / Language</h3>
+        <label for="language-select">Uygulama dili</label>
+        <select id="language-select" aria-label="Application language">
+            <option value="tr">Türkçe</option><option value="en">English</option><option value="es">Español</option>
+            <option value="fr">Français</option><option value="de">Deutsch</option><option value="pt-BR">Português (Brasil)</option>
+            <option value="it">Italiano</option><option value="ru">Русский</option><option value="pl">Polski</option>
+            <option value="nl">Nederlands</option><option value="ja">日本語</option><option value="ko">한국어</option>
+            <option value="zh-CN">简体中文</option><option value="ar">العربية</option><option value="hi">हिन्दी</option>
+        </select>
+        <p>Dil tercihi bu cihazda saklanır. Menü ve temel arayüz metinleri çevrilir; bazı kullanıcı içerikleri ve rehber metinleri kaynak dilinde kalabilir.</p>
+    </div>
+    <div class="settings-group">
+        <h3>Tema</h3>
+        <label>
+            <input type="color" id="theme-color" value="#00ffcc">
+            Vurgu Rengi
+        </label>
+        <p>Bu renk, butonlar ve vurgular için kullanılır.</p>
+    </div>
+    <div class="settings-group">
+        <h3>Animasyon</h3>
+        <label>
+            <input type="checkbox" id="animation-toggle" checked>
+            Animasyonları Etkinleştir
+        </label>
+        <p>Sayfa geçişleri ve hover efektleri.</p>
+    </div>
+    <div class="settings-group">
+        <h3>Bildirim</h3>
+        <label>
+            <input type="checkbox" id="notification-toggle" checked>
+            Masaüstü Bildirimlerini Etkinleştir
+        </label>
+        <p>Desteklenen işlemler için sistem bildirimi izni. Otomatik turnuva hatırlatmaları çevrim içi servis gerektirir.</p>
+    </div>
+    <div class="settings-group">
+        <h3>Veri</h3>
+        <button id="reset-data-btn">Veriyi Sıfırla</button>
+        <p>Profil, Genesis Coin bakiyesi, envanter, işlem geçmişi, yerel haberler ve ayarlar sıfırlanır. Uygulamanın sabit içerik dosyaları silinmez.</p>
+    </div>
+    <div class="settings-group">
+        <h3>Hakkında</h3>
+        <p>Apex Genesis - Rocket League Desktop Uygulaması</p>
+        <p>Versiyon 1.2.0</p>
+    </div>
+</div>
+<script>
+    // Settings storage key
+    const SETTINGS_KEY = 'apexGenesisSettings';
+
+    // Default settings
+    const defaultSettings = {
+        themeColor: '#00ffcc',
+        animationsEnabled: true,
+        notificationsEnabled: true
+    };
+
+    // Load settings from localStorage
+    function loadSettings() {
+        const stored = localStorage.getItem(SETTINGS_KEY);
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {
+                console.error('Settings parse error', e);
+                return defaultSettings;
+            }
+        }
+        return { ...defaultSettings };
+    }
+
+    // Save settings to localStorage
+    function saveSettings(settings) {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }
+
+    // Apply theme color to document root
+    function applyThemeColor(color) {
+        document.documentElement.style.setProperty('--primary-color', color);
+        // Also update hover shade? We'll compute a darker shade for simplicity
+        const hoverShade = darkenColor(color, 0.1);
+        document.documentElement.style.setProperty('--primary-hover', hoverShade);
+    }
+
+    // Simple color darkening (for hover)
+    function darkenColor(color, factor) {
+        if (color.startsWith('#')) {
+            const num = parseInt(color.slice(1), 16);
+            let r = (num >> 16) & 0xFF;
+            let g = (num >> 8) & 0xFF;
+            let b = num & 0xFF;
+            r = Math.round(r * (1 - factor));
+            g = Math.round(g * (1 - factor));
+            b = Math.round(b * (1 - factor));
+            const newNum = (r << 16) | (g << 8) | b;
+            return '#' + newNum.toString(16).padStart(6, '0');
+        }
+        return color;
+    }
+
+    // Apply saved settings on load
+    function applySettings() {
+        const settings = loadSettings();
+        document.getElementById('theme-color').value = settings.themeColor;
+        document.getElementById('animation-toggle').checked = settings.animationsEnabled;
+        document.getElementById('notification-toggle').checked = settings.notificationsEnabled;
+        applyThemeColor(settings.themeColor);
+        document.documentElement.classList.toggle('animations-off', !settings.animationsEnabled);
+    }
+
+    // Event listeners
+    document.getElementById('theme-color').addEventListener('input', (e) => {
+        const color = e.target.value;
+        applyThemeColor(color);
+        const settings = loadSettings();
+        settings.themeColor = color;
+        saveSettings(settings);
+    });
+
+    document.getElementById('animation-toggle').addEventListener('change', (e) => {
+        const settings = loadSettings();
+        settings.animationsEnabled = e.target.checked;
+        saveSettings(settings);
+        document.documentElement.classList.toggle('animations-off', !settings.animationsEnabled);
+    });
+
+    document.getElementById('notification-toggle').addEventListener('change', (e) => {
+        const settings = loadSettings();
+        settings.notificationsEnabled = e.target.checked;
+        saveSettings(settings);
+        if (e.target.checked && 'Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission().then((permission) => {
+                if (permission !== 'granted') {
+                    e.target.checked = false;
+                    const latest = loadSettings();
+                    latest.notificationsEnabled = false;
+                    saveSettings(latest);
+                }
+            });
+        }
+    });
+
+    document.getElementById('reset-data-btn').addEventListener('click', () => {
+        if (confirm('Bu cihazdaki profil, Genesis Coin, envanter, takım/oyuncu/turnuva kayıtları, yerel duyurular ve ayarlar silinsin mi? Bu işlem geri alınamaz.')) {
+            ['apexGenesisProfile', SETTINGS_KEY, 'apexGenesisAdminNews', 'apexGenesisProfileReady', 'apexGenesisUsername', 'apexGenesisTeams', 'apexGenesisPlayers', 'apexGenesisTournaments', 'apexGenesisShopCatalog', 'apexGenesisUsers'].forEach(key => localStorage.removeItem(key));
+            applyThemeColor(defaultSettings.themeColor);
+            document.documentElement.classList.remove('animations-off');
+            alert('Bu cihazdaki profil ve yerel uygulama verileri sıfırlandı. Uygulama yeniden açılıyor.');
+            location.reload();
+        }
+    });
+
+    // Initial apply
+    applySettings();
+</script>
+<style>
+    .tab-content { padding: 20px; }
+    .settings-group { background: #1e1e1e; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+    .settings-group h3 { color: #00ffcc; margin-bottom: 12px; }
+    .settings-group label { display: block; margin-bottom: 10px; color: #b0b0b0; }
+    .settings-group input[type="color"] { width: 60px; height: 30px; border: none; cursor: pointer; vertical-align: middle; }
+    .settings-group input[type="checkbox"] { margin-right: 8px; }
+    #reset-data-btn { background: #ff6b6b; color: white; border: none; padding: 8px 14px; border-radius: var(--border-radius); cursor: pointer; font-weight: bold; margin-top: 10px; transition: background var(--transition-speed); }
+    #reset-data-btn:hover { background: #ff5252; }
+/* Polished settings layout: consistent two-column cards, aligned controls, and a clear danger zone. */
+    .tab-content { display:block; width:100%; max-width:1180px; margin:0 auto; padding:clamp(18px,2.4vw,32px); }
+    .tab-content > h2 { font-size:clamp(1.45rem,2vw,2rem); margin-bottom:8px; }
+    .language-settings select { width:100%; max-width:360px; padding:12px 14px; border:1px solid #344740; border-radius:9px; background:#0d1412; color:#e6f0ec; font:inherit; }
+    .language-settings label { display:block; margin-bottom:8px; color:#c6d4cf; font-size:.88rem; }
+    .settings-group { min-width:0; margin:0; padding:22px 24px; border:1px solid #293632; border-radius:14px; background:linear-gradient(145deg,#1b2221,#141817); box-shadow:0 10px 26px rgba(0,0,0,.16); }
+    .settings-group h3 { display:flex; align-items:center; gap:10px; margin:0 0 14px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,.07); font-size:1rem; }
+    .settings-group p { color:#91a29d; font-size:.88rem; line-height:1.65; margin-top:12px; max-width:56ch; }
+    .settings-group label { display:flex; align-items:center; gap:12px; margin:0; color:#e0e9e6; line-height:1.5; cursor:pointer; }
+    .settings-group input[type="color"] { width:48px; height:38px; padding:3px; border:1px solid #3b514a; border-radius:9px; background:#0c1110; flex-shrink:0; }
+    .settings-group input[type="checkbox"] { appearance:none; width:42px; height:24px; border:1px solid #40534d; border-radius:99px; background:#29322f; position:relative; flex-shrink:0; cursor:pointer; transition:background .2s,border-color .2s; }
+    .settings-group input[type="checkbox"]::after { content:""; position:absolute; width:16px; height:16px; top:3px; left:3px; border-radius:50%; background:#a5b3ae; transition:transform .2s,background .2s; }
+    .settings-group input[type="checkbox"]:checked { background:var(--primary-color); border-color:var(--primary-color); }
+    .settings-group input[type="checkbox"]:checked::after { transform:translateX(18px); background:#07110f; }
+    #reset-data-btn { margin-top:4px; padding:10px 14px; border:1px solid #663a37; border-radius:9px; background:#321d1c; color:#ffb0a8; transition:background .2s,border-color .2s; }
+    #reset-data-btn:hover { background:#482321; border-color:#a34e47; }
+    .settings-group:has(#reset-data-btn) { border-color:#50312e; background:linear-gradient(145deg,#211918,#171514); }
+    @media (min-width:760px) { .tab-content { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; align-content:start; } .tab-content > h2 { grid-column:1/-1; margin-bottom:0; } .settings-group:has(#reset-data-btn), .settings-group:last-child { grid-column:1/-1; } }
+    @media (max-width:759px) { .tab-content { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; } .settings-group { padding:18px; } }
+</style>

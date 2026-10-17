@@ -1,0 +1,164 @@
+<div class="tab-content">
+    <h2>Yönetim Merkezi</h2>
+    <p class="admin-scope-note">Bu paneldeki değişiklikler şu anda yalnızca bu cihazda saklanır; çevrim içi yönetici yetkilendirmesi bağlı değildir.</p>
+    <div class="admin-section">
+        <h3>Yerel profil durumu</h3>
+        <div id="userList"></div>
+    </div>
+    <div class="admin-section">
+        <h3>Haber Ekle</h3>
+        <form id="addNewsForm">
+            <div>
+                <label for="newsTitle">Başlık</label>
+                <input type="text" id="newsTitle" required>
+            </div>
+            <div>
+                <label for="newsContent">İçerik</label>
+                <textarea id="newsContent" rows="4" required></textarea>
+            </div>
+            <div>
+                <label for="newsImage">Görsel URL (opsiyonel)</label>
+                <input type="text" id="newsImage" placeholder="https://example.com/image.jpg">
+            </div>
+            <button type="submit">Haber Ekle</button>
+        </form>
+        <div id="newsAddStatus"></div>
+    </div>
+    <div class="admin-section">
+        <h3>Eklenen Haberler (Yerel)</h3>
+        <div id="adminNewsList"></div>
+    </div>
+</div>
+<script>
+    // Load users from localStorage
+    function loadUsers() {
+        const container = document.getElementById('userList');
+        container.replaceChildren();
+        const username = localStorage.getItem('apexGenesisUsername');
+        const heading = document.createElement('strong');
+        heading.textContent = username ? 'Aktif profil: ' + username : 'Henüz yerel profil oluşturulmadı.';
+        const scope = document.createElement('p');
+        scope.textContent = 'Kullanıcı hesapları, roller ve çevrim içi oturumlar için uzak backend yapılandırması gereklidir.';
+        scope.style.color = '#9eafaa';
+        scope.style.marginTop = '8px';
+        container.append(heading, scope);
+    }
+
+    // Load admin-added news from localStorage
+    function loadAdminNews() {
+        let news = [];
+        try {
+            const stored = JSON.parse(localStorage.getItem('apexGenesisAdminNews') || '[]');
+            news = Array.isArray(stored) ? stored : [];
+        } catch {
+            localStorage.removeItem('apexGenesisAdminNews');
+        }
+        const container = document.getElementById('adminNewsList');
+        container.innerHTML = '';
+        if (news.length === 0) {
+            container.textContent = 'Henüz admin tarafından eklenmiş haber yok.';
+            return;
+        }
+        news.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.style.border = '1px solid #333';
+            div.style.padding = '10px';
+            div.style.marginBottom = '10px';
+            div.style.borderRadius = '4px';
+            const imageUrl = item.image ? safeHttpUrl(item.image) : '';
+            div.innerHTML = `<strong>${escapeHTML(item.title)}</strong><p>${escapeHTML(item.content)}</p>${imageUrl ? `<img src="${escapeHTML(imageUrl)}" alt="${escapeHTML(item.title)}" style="max-width:100%;margin-top:5px;border-radius:4px;">` : ''}<small>Ekleme: ${escapeHTML(new Date(item.date).toLocaleString())}</small>`;
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.textContent = 'Duyuruyu sil';
+            removeButton.style.cssText = 'margin-top:10px;padding:7px 10px;border-radius:5px;border:1px solid #57312d;background:#2a1918;color:#ffaaa0;cursor:pointer;';
+            removeButton.addEventListener('click', () => {
+                if (!confirm('Bu yerel duyuruyu silmek istiyor musun?')) return;
+                const current = JSON.parse(localStorage.getItem('apexGenesisAdminNews') || '[]');
+                current.splice(idx, 1);
+                localStorage.setItem('apexGenesisAdminNews', JSON.stringify(current));
+                loadAdminNews();
+            });
+            div.appendChild(removeButton);
+            container.appendChild(div);
+        });
+    }
+
+    // Add news
+    document.getElementById('addNewsForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const title = document.getElementById('newsTitle').value.trim();
+        const content = document.getElementById('newsContent').value.trim();
+        const rawImage = document.getElementById('newsImage').value.trim();
+        const image = rawImage ? safeHttpUrl(rawImage) : null;
+        if (rawImage && !image) {
+            document.getElementById('newsAddStatus').textContent = 'Görsel adresi geçerli bir HTTP(S) bağlantısı olmalı.';
+            document.getElementById('newsAddStatus').style.color = '#ff6b6b';
+            return;
+        }
+        if (title === '' || content === '') {
+            document.getElementById('newsAddStatus').textContent = 'Başlık ve içerik zorunludur.';
+            document.getElementById('newsAddStatus').style.color = '#ff6b6b';
+            return;
+        }
+        const newsItem = {
+            title,
+            content,
+            image,
+            date: new Date().toISOString()
+        };
+        let adminNews = JSON.parse(localStorage.getItem('apexGenesisAdminNews') || '[]');
+        adminNews.push(newsItem);
+        localStorage.setItem('apexGenesisAdminNews', JSON.stringify(adminNews));
+        document.getElementById('newsAddStatus').textContent = 'Haber bu cihazın yerel haber listesine eklendi.';
+        document.getElementById('newsAddStatus').style.color = '#00ffcc';
+        // Clear form
+        this.reset();
+        // Refresh admin news list
+        loadAdminNews();
+    });
+
+    // Initial load
+    loadUsers();
+    loadAdminNews();
+</script>
+<style>
+    .tab-content { padding: 20px; }
+    .admin-scope-note { color: #d5bd8a; background: #211b10; border: 1px solid #4a3e25; border-radius: 8px; padding: 12px 14px; line-height: 1.6; margin: 0 0 18px; font-size: .84rem; }
+    .admin-section { background: #1e1e1e; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+    .admin-section h3 { color: #00ffcc; margin-bottom: 12px; }
+    #userList { max-height: 200px; overflow-y: auto; border: 1px solid #333; border-radius: 4px; padding: 10px; }
+    #addNewsForm { display: flex; flex-direction: column; gap: 10px; }
+    #addNewsForm input, #addNewsForm textarea { width: 100%; padding: 10px; border: 1px solid #333; border-radius: 4px; background: #0a0a0a; color: #e0e0e0; }
+    #addNewsForm button { background: #00ffcc; color: #0a0a0a; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    #addNewsForm button:hover { background: #00e6b8; }
+    #newsAddStatus { margin-top: 10px; font-weight: bold; }
+    #adminNewsList { margin-top: 10px; }
+/* Administration workspace: structured panels, consistent form rhythm, and readable announcement cards. */
+    .tab-content { display:block; width:100%; max-width:1240px; margin:0 auto; padding:clamp(18px,2.4vw,32px); }
+    .tab-content > h2 { margin-bottom:8px; font-size:clamp(1.45rem,2vw,2rem); }
+    .admin-scope-note { max-width:100%; margin:0 0 20px; padding:13px 16px; display:flex; align-items:flex-start; gap:10px; }
+    .admin-section { min-width:0; margin:0; padding:22px 24px; border:1px solid #293632; border-radius:14px; background:linear-gradient(145deg,#1b2221,#141817); box-shadow:0 10px 26px rgba(0,0,0,.16); }
+    .admin-section h3 { display:flex; align-items:center; margin:0 0 18px; padding-bottom:13px; border-bottom:1px solid rgba(255,255,255,.07); font-size:1rem; }
+    #userList { max-height:none; min-height:128px; padding:16px; border:1px solid #2c3a35; border-radius:10px; background:#111715; line-height:1.6; overflow-wrap:anywhere; }
+    #userList strong { display:block; color:#e7f1ed; font-size:1.02rem; }
+    #userList p { margin:8px 0 0 !important; font-size:.88rem; line-height:1.65; }
+    #addNewsForm { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    #addNewsForm > div { min-width:0; display:flex; flex-direction:column; gap:7px; }
+    #addNewsForm > div:nth-child(2) { grid-column:1/-1; }
+    #addNewsForm label { color:#c3d0cb; font-size:.85rem; font-weight:650; }
+    #addNewsForm input, #addNewsForm textarea { width:100%; min-width:0; padding:12px 13px; border:1px solid #34443e; border-radius:9px; background:#0d1211; color:#e7efec; line-height:1.5; }
+    #addNewsForm textarea { min-height:120px; resize:vertical; }
+    #addNewsForm input::placeholder { color:#63736d; }
+    #addNewsForm button { justify-self:start; padding:11px 17px; border-radius:9px; background:var(--primary-color); transition:filter .2s,transform .2s; }
+    #addNewsForm button:hover { filter:brightness(1.08); transform:translateY(-1px); }
+    #newsAddStatus { font-size:.88rem; line-height:1.5; }
+    #adminNewsList { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); gap:14px; margin-top:0; }
+    #adminNewsList > div { min-width:0; padding:17px !important; margin:0 !important; border:1px solid #2b3934 !important; border-radius:11px !important; background:#111715; overflow-wrap:anywhere; }
+    #adminNewsList > div > strong { color:#e5f1ec; font-size:1rem; }
+    #adminNewsList > div p { color:#aebdb7; line-height:1.65; margin:10px 0; white-space:pre-wrap; }
+    #adminNewsList > div small { display:block; color:#74857e; margin-top:12px; }
+    #adminNewsList img { display:block; max-height:220px; object-fit:cover; }
+    #adminNewsList button { padding:8px 11px !important; border-radius:8px !important; }
+    @media (min-width:900px) { .tab-content { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; align-content:start; } .tab-content > h2, .admin-scope-note, .admin-section:last-child { grid-column:1/-1; } .admin-section { align-self:start; } }
+    @media (max-width:650px) { .admin-section { padding:17px; } #addNewsForm { grid-template-columns:minmax(0,1fr); } #addNewsForm > div:nth-child(2) { grid-column:auto; } }
+</style>

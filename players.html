@@ -1,0 +1,86 @@
+<div class="tab-content directory-page">
+    <div class="directory-header"><div><div class="section-eyebrow">COMMUNITY / PLAYER DIRECTORY</div><h2>Oyuncular</h2><p>Oyuncu profillerini ekle ve filtrele. Gerçek rekabet istatistikleri doğrulanmadan gösterilmez.</p></div><span class="local-data-badge">Yerel kayıtlar</span></div>
+    <form id="player-form" class="editor-form">
+        <h3>Oyuncu profili oluştur</h3>
+        <div class="form-grid"><label>Oyuncu adı<input id="player-name" maxlength="32" required placeholder="Oyuncu adı"></label><label>Rol<select id="player-role"><option>Flex</option><option>Striker</option><option>Playmaker</option><option>Defensive</option><option>Goalkeeper</option></select></label><label>Rank<select id="player-rank"><option>Belirtilmedi</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option><option>Diamond</option><option>Champion</option><option>Grand Champion</option><option>Supersonic Legend</option></select></label><label>Bölge<select id="player-region"><option>EU</option><option>NA</option><option>ME</option><option>OCE</option><option>SAM</option><option>APAC</option><option>Belirtilmedi</option></select></label></div>
+        <button type="submit" class="primary-action">Oyuncu ekle</button><p id="player-form-status" class="form-status" role="status"></p>
+    </form>
+    <div class="directory-toolbar"><h3>Oyuncu dizini <span id="player-total" class="count-pill">0</span></h3><input id="player-search" type="search" placeholder="Oyuncu, rank veya bölge ara…" aria-label="Oyuncu ara"></div>
+    <div id="players-list" class="directory-grid"></div>
+</div>
+<script>
+    const PLAYER_KEY = 'apexGenesisPlayers';
+    let playersData = [];
+    function readPlayers() {
+        try { const saved = JSON.parse(localStorage.getItem(PLAYER_KEY) || '[]'); return Array.isArray(saved) ? saved : []; }
+        catch { return []; }
+    }
+    function savePlayers() { localStorage.setItem(PLAYER_KEY, JSON.stringify(playersData)); }
+    function renderPlayers() {
+        const container = document.getElementById('players-list');
+        const query = document.getElementById('player-search').value.trim().toLowerCase();
+        const filtered = playersData.filter(player => [player.username, player.rank, player.role, player.region].join(' ').toLowerCase().includes(query));
+        document.getElementById('player-total').textContent = filtered.length;
+        container.replaceChildren();
+        if (!filtered.length) {
+            const empty = document.createElement('div'); empty.className = 'directory-empty';
+            empty.innerHTML = '<strong>Oyuncu profili bulunamadı.</strong><p>İlk oyuncu profilini yukarıdaki formdan oluşturabilirsin.</p>';
+            container.appendChild(empty); return;
+        }
+        filtered.forEach(player => {
+            const card = document.createElement('article'); card.className = 'directory-card';
+            const top = document.createElement('div'); top.className = 'directory-card-top';
+            const avatar = document.createElement('div'); avatar.className = 'player-mark'; avatar.textContent = String(player.username || 'P').slice(0,1).toUpperCase();
+            const rank = document.createElement('span'); rank.className = 'rank-pill'; rank.textContent = player.rank || 'Belirtilmedi';
+            top.append(avatar, rank);
+            const name = document.createElement('h3'); name.textContent = player.username;
+            const role = document.createElement('p'); role.textContent = 'Oyun rolü · ' + (player.role || 'Belirtilmedi');
+            const region = document.createElement('p'); region.textContent = 'Bölge · ' + (player.region || 'Belirtilmedi');
+            const note = document.createElement('div'); note.className = 'directory-meta'; note.textContent = 'Doğrulanmış maç istatistiği eklenmemiş';
+            const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'danger-action'; remove.textContent = 'Profili sil';
+            remove.addEventListener('click', () => { if (!confirm('“' + player.username + '” profilini bu cihazdan silmek istiyor musun?')) return; playersData = playersData.filter(item => item.id !== player.id); savePlayers(); renderPlayers(); });
+            card.append(top, name, role, region, note, remove); container.appendChild(card);
+        });
+    }
+    document.getElementById('player-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const username = document.getElementById('player-name').value.trim();
+        const status = document.getElementById('player-form-status');
+        if (username.length < 2) { status.textContent = 'Oyuncu adı en az 2 karakter olmalı.'; return; }
+        if (playersData.some(player => player.username.toLowerCase() === username.toLowerCase())) { status.textContent = 'Bu oyuncu adı zaten kayıtlı.'; return; }
+        playersData.unshift({ id: crypto.randomUUID(), username, role: document.getElementById('player-role').value, rank: document.getElementById('player-rank').value, region: document.getElementById('player-region').value, createdAt: new Date().toISOString() });
+        savePlayers(); renderPlayers(); event.target.reset(); status.textContent = 'Oyuncu profili bu cihazda kaydedildi.';
+    });
+    document.getElementById('player-search').addEventListener('input', renderPlayers);
+    playersData = readPlayers(); renderPlayers();
+</script>
+<style>
+    .directory-page { display:block; padding:0; }
+    .directory-header { display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:22px; }
+    .directory-header p { color:#9eafaa; line-height:1.6; }
+    .local-data-badge,.rank-pill,.count-pill { display:inline-flex; border:1px solid #34423e; border-radius:999px; color:#a5b5b0; padding:6px 10px; font-size:.72rem; white-space:nowrap; }
+    .editor-form { background:linear-gradient(145deg,#171e1c,#121615); border:1px solid #293531; border-radius:12px; padding:22px; margin-bottom:26px; }
+    .editor-form h3,.directory-toolbar h3 { color:#eaf3ef; margin-bottom:16px; }
+    .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+    .form-grid label { color:#9eafaa; display:grid; gap:7px; font-size:.82rem; }
+    .form-grid input,.form-grid select { width:100%; min-width:0; border:1px solid #34413d; border-radius:7px; background:#0c100f; color:#edf5f1; padding:11px; }
+    .primary-action,.danger-action { border:0; border-radius:7px; padding:10px 14px; cursor:pointer; font-weight:800; }
+    .primary-action { background:var(--primary-color); color:#07110f; }
+    .danger-action { margin-top:14px; background:#2a1918; color:#ffaaa0; border:1px solid #57312d; }
+    .form-status { display:inline-block; margin-left:12px; color:#91d8c5; font-size:.82rem; }
+    .directory-toolbar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; }
+    .directory-toolbar h3 { margin:0; }
+    .directory-toolbar input { width:min(330px,100%); background:#101514; color:#edf5f1; border:1px solid #2c3935; border-radius:8px; padding:11px 13px; }
+    .directory-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .directory-card { min-width:0; padding:20px; border-radius:12px; background:linear-gradient(145deg,#1a2220,#131716); border:1px solid #28322f; }
+    .directory-card-top { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:18px; }
+    .player-mark { width:52px; height:52px; display:flex; align-items:center; justify-content:center; border:1px solid #236657; border-radius:50%; background:#12302a; color:var(--primary-color); font:800 1.1rem Orbitron,monospace; }
+    .directory-card h3 { color:#edf5f2; margin-bottom:9px; overflow-wrap:anywhere; }
+    .directory-card p { color:#a1b0ab; font-size:.88rem; line-height:1.6; margin:4px 0; }
+    .directory-meta { color:#71817b; font-size:.75rem; margin-top:14px; }
+    .directory-empty { grid-column:1/-1; padding:28px; border:1px dashed #35433e; border-radius:12px; color:#a3b1ac; }
+    .directory-empty strong { color:#e7f0ec; }
+    .directory-empty p { margin-top:8px; }
+    @media(max-width:1000px) { .directory-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:650px) { .form-grid,.directory-grid { grid-template-columns:1fr; } .directory-header,.directory-toolbar { align-items:flex-start; flex-direction:column; } .form-status { display:block; margin:12px 0 0; } }
+</style>

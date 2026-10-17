@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Genesis - Giriş</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background-color: #0a0a0a;
+        }
+        .login-box {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            width: 300px;
+        }
+        .login-box h2 {
+            color: #00ffcc;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #0a0a0a;
+            color: #e0e0e0;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: #00ffcc;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .login-box button:hover {
+            background: #00e6b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>Apex Genesis</h2>
+        <form id="loginForm">
+            <div>
+                <label for="username">Kullanıcı Adı</label>
+                <input type="text" id="username" placeholder="Kullanıcı adınız" required>
+            </div>
+            <div>
+                <label for="password">Şifre</label>
+                <input type="password" id="password" placeholder="Şifreniz" required>
+            </div>
+            <button type="submit">Giriş Yap</button>
+        </form>
+        <p id="loginMessage" style="color:#ff6b6b; margin-top:10px; text-align:center;"></p>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            if (username === '' || password === '') {
+                document.getElementById('loginMessage').textContent = 'Kullanıcı adı ve şifre gereklidir.';
+                return;
+            }
+            // Simple authentication: accept any non-empty credentials
+            // In a real app, you would verify against a server
+            localStorage.setItem('apexGenesisLoggedIn', 'true');
+            localStorage.setItem('apexGenesisUsername', username);
+            // Redirect to main app
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

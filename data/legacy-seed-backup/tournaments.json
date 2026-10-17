@@ -1,0 +1,22 @@
+[
+  {
+    "id": "tourn1",
+    "title": "Apex Genesis Invitational",
+    "date": "2026-11-15T18:00:00Z",
+    "prize": 1000,
+    "type": "Yaklaşan",
+    "participants": ["team1", "team2", "team3", "team4"],
+    "status": "upcoming",
+    "coinReward": 50
+  },
+  {
+    "id": "tourn2",
+    "title": "Summer Rocket League Bash",
+    "date": "2026-08-20T16:00:00Z",
+    "prize": 500,
+    "type": "Geçmiş",
+    "participants": ["team1", "team2"],
+    "status": "completed",
+    "coinReward": 0
+  }
+]

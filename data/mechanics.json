@@ -1,0 +1,39 @@
+[
+  {
+    "id": "fast-aerial",
+    "title": "Fast Aerial",
+    "description": "Topa havada mümkün olduğunca erken ve kontrollü ulaşmak için jump, ikinci jump ve boost girdilerini doğru sırayla birleştir.",
+    "videoUrl": "https://www.youtube.com/watch?v=vl15ghczCSs",
+    "steps": [
+      "Aracını topun uçuş çizgisine hizala ve gereksiz direksiyon düzeltmelerini azalt.",
+      "İlk jump ile yerden ayrılırken burnu kontrollü biçimde yukarı kaldır.",
+      "İkinci jump girdisini ve boost'u zamanlamalı kullan; havada gereksiz yere geriye yatma.",
+      "Topa temas ettikten sonra iniş açını ve bir sonraki aksiyonu planla."
+    ],
+    "commonMistakes": [
+      "Boost'u kullanmadan önce fazla süre beklemek.",
+      "İkinci jump sırasında burnu aşırı yukarı çekip yatay hızı kaybetmek.",
+      "Topa ulaştıktan sonra iniş ve recovery planlamamak."
+    ],
+    "positioningSection": false
+  },
+  {
+    "id": "air-dribble",
+    "title": "Air Dribble",
+    "description": "Topu duvardan veya yerden havaya alıp art arda kontrollü temaslarla taşımayı çalış. Öncelik yüksek hız değil, top ile araç arasındaki mesafeyi korumaktır.",
+    "videoUrl": "https://www.youtube.com/watch?v=kLOrDAkkgyM",
+    "steps": [
+      "Topu duvara kontrollü biçimde sür ve duvardan çıkış noktasını önceden seç.",
+      "Topa ilk teması hafif yap; topu aracından çok uzağa fırlatma.",
+      "Boost'u kısa aralıklarla kullanarak topun alt-arka bölgesinde kal.",
+      "Aracının burnunu topun hareket yönüne göre ayarla ve bir sonraki teması erkenden planla."
+    ],
+    "commonMistakes": [
+      "Topa ilk temasta fazla sert vurmak.",
+      "Boost'u sürekli basılı tutup topun altına geçememek.",
+      "Aracı topa hizalamak yerine yalnızca topu kovalamak.",
+      "Başarısız denemeden sonra güvenli recovery yerine havada gereksiz düzeltmeler yapmak."
+    ],
+    "positioningSection": false
+  }
+]
