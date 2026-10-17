@@ -53,11 +53,11 @@ Both SQL migration files listed above have been applied to the configured Supaba
 
 ## Deployment status and caveats
 - Production URL: `https://apex-genesis-web.vercel.app`.
-- Deployments are currently file-based snapshots. GitHub↔Vercel auto deploy still needs its repository/scope connection fixed.
+- GitHub main pushes trigger Vercel deployments. The latest production deployment from commit 6c3cc22 is READY and serves the Vite frontend.
 - Build/lint last passed: web build succeeded; oxlint had warnings (React hook/effect/exhaustive-deps), zero errors.
-- Pushing commit `2c38181` triggered a READY production deployment, but the root project configuration served the Electron `index.html`, not the React frontend. Root `vercel.json` now builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes. Verify the next Git-triggered deployment; until its Vite assets/title are confirmed, do not claim the web frontend is live.
-- Direct Vercel API deployment returned 403 for scope `xliew` and local `vercel whoami` says Logged out, but the Git push deployment path is working.
-- After the corrected deployment, verify the homepage, /login, /signup, /support, /admin and emitted JS/CSS assets.
+- Root `vercel.json` builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes. The latest Git-triggered production deployment reached READY. Verified production homepage, hashed JS/CSS assets, Login chunk, and Support chunk return HTTP 200. Production JS contains the configured Supabase project URL and public publishable-key prefix.
+- Direct Vercel API deployment returned 403 for scope `xliew` and local `vercel whoami` says Logged out, but Git push deployment is working. Continue deployment through pushes to GitHub `main`.
+- HTTP smoke checks do not prove all authenticated workflows. Still test signup/email confirmation, profile updates, Member rank denial, Member team-creation denial, Owner role management, and real-time ticket exchange with separate Member/staff accounts.
 - A production HTTP 200 is not proof of all workflows. Test signup/email confirmation, profile updates, rank denial for Member, team creation denial for Member, Owner role management, ticket messaging, and support status changes.
 - The old Express/SQLite prototype in `backend/` is not the production web stack and should not be deployed as-is.
 - Local-only desktop features still include player directory, tournament planner, Genesis Coin wallet, and parts of inventory/local news archive. Do not claim all data syncs across devices until migrated.

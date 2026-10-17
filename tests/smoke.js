@@ -97,6 +97,10 @@ const shop = JSON.parse(fs.readFileSync(path.join(root, 'data/shop.json'), 'utf8
 assert.ok(shop.every(item => !/[ÃÅÄâ€�]/.test(item.name + item.description)), 'Desktop shop text must not contain mojibake');
 assert.match(migration, /set description = 'Topluluk başlangıç rozeti\.'/);
 assert.ok(fs.existsSync(path.join(root, 'GPT.md')), 'Project handoff GPT.md must exist');
+const vercelConfig = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
+assert.equal(vercelConfig.outputDirectory, 'frontend/dist');
+assert.match(vercelConfig.installCommand, /cd frontend && npm install/);
+assert.match(vercelConfig.buildCommand, /cd frontend && npm run build/);
 const webApp = fs.readFileSync(path.join(root, 'frontend/src/App.jsx'), 'utf8');
 assert.match(webApp, /lazy\(/, 'Web routes should be lazy-loaded for faster initial render');
 const supportPage = fs.readFileSync(path.join(root, 'frontend/src/pages/Support.jsx'), 'utf8');
