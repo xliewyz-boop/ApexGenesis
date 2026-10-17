@@ -56,5 +56,3 @@ Only use this for your own verified owner account. The browser cannot grant itse
 ## Important
 
 The SQL migration must be executed in the Supabase project before these pages can use the database. A successful frontend build only validates the client bundle; it does not prove database migration, email delivery, or production hosting has been completed.
-
-[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

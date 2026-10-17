@@ -34,5 +34,3 @@ function AppRoutes() {
   </Routes></div>;
 }
 export default function App() { return <AuthProvider><Router><AppRoutes /></Router></AuthProvider>; }
-
-[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

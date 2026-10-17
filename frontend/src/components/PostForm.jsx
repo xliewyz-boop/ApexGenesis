@@ -36,5 +36,3 @@ export default function PostForm({ onCreated }) {
     </form>
   );
 }
-
-[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

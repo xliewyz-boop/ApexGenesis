@@ -40,5 +40,3 @@ export default function Tournaments() {
     {!events.length && <p className="mt-8 rounded-xl border border-slate-800 p-8 text-center text-slate-400">Henüz turnuva yayınlanmadı. Yönetici Supabase panelinden turnuva ekleyebilir.</p>}
   </div></div>;
 }
-
-[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

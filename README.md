@@ -56,5 +56,3 @@ The previous generated seed records for teams, players, tournaments, and news we
 Run `npm test` to check required files, JSON validity, JavaScript syntax, Electron security settings, tab loading structure, and regression checks for the old fake login and training placeholder.
 
 The installer is not code-signed. Windows SmartScreen may display a warning until the publisher signs the executable with a trusted code-signing certificate.
-
-[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

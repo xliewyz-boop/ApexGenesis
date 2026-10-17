@@ -12,5 +12,3 @@ export default function Navbar() {
   };
   return <nav className="border-b border-slate-800 bg-slate-950 text-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3"><Link to="/" className="text-xl font-black tracking-tight text-white">APEX <span className="text-indigo-400">GENESIS</span></Link><div className="flex flex-wrap items-center gap-1">{!user ? <><Link to="/login" className={navClass}>Giriş</Link><Link to="/signup" className="rounded-lg bg-indigo-500 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-400">Kayıt ol</Link></> : <><Link to="/" className={navClass}>Akış</Link><Link to="/teams" className={navClass}>Takımlar</Link><Link to="/tournaments" className={navClass}>Turnuvalar</Link><Link to="/training" className={navClass}>Antrenman</Link><Link to="/shop" className={navClass}>Mağaza</Link><Link to="/announcements" className={navClass}>Duyurular</Link><Link to="/profile" className={navClass}>Profil</Link><button onClick={handleLogout} className={navClass}>Çıkış</button></>}</div></div></nav>;
 }
-
-[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

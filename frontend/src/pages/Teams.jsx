@@ -59,5 +59,3 @@ export default function Teams() {
     {!teams.length && <p className="mt-8 text-center text-slate-400">Henüz takım yok. İlk takımı sen oluştur.</p>}
   </div></div>;
 }
-
-[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]
