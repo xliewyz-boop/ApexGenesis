@@ -1,63 +1,40 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import axios from 'axios';
+import { supabase } from '../lib/supabase.js';
 
-const PostForm = () => {
+export default function PostForm({ onCreated }) {
+  const { user } = useAuth();
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      await axios.post('/api/posts', { content }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      setContent('');
-      // In a real app, we would refresh the posts list via context or state
-      // For simplicity, we'll rely on the parent component to refetch
-      window.dispatchEvent(new Event('postCreated'));
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create post');
-    } finally {
-      setLoading(false);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!supabase || !user) return;
+    const clean = content.trim();
+    if (!clean || clean.length > 2000) {
+      setError('Paylaşım 1–2000 karakter arasında olmalı.');
+      return;
     }
+    setLoading(true);
+    setError('');
+    const { error: insertError } = await supabase.from('posts').insert({ user_id: user.id, content: clean });
+    if (insertError) setError(insertError.message);
+    else {
+      setContent('');
+      await onCreated?.();
+    }
+    setLoading(false);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="post-content" className="block text-sm font-medium text-gray-700">
-          What's happening?
-        </label>
-        <textarea
-          id="post-content"
-          rows={4}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          disabled={loading}
-        />
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      </div>
-      <div className="flex items-center justify-between">
-        <button
-          type="submit"
-          disabled={loading || !content.trim()}
-          className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-            loading ? 'opacity-50' : ''
-          }`}
-        >
-          {loading ? 'Posting...' : 'Post'}
-        </button>
-      </div>
+    <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl">
+      <label htmlFor="post-content" className="mb-3 block text-sm font-semibold text-slate-200">Aklında ne var?</label>
+      <textarea id="post-content" rows={4} maxLength={2000} value={content} onChange={e => setContent(e.target.value)} placeholder="GG, antrenman notları, takım duyurusu…" className="w-full resize-y rounded-xl border border-slate-700 bg-slate-950 p-4 text-slate-100 outline-none placeholder:text-slate-500 focus:border-indigo-500" disabled={loading} />
+      {error && <p role="alert" className="mt-2 text-sm text-red-300">{error}</p>}
+      <div className="mt-3 flex items-center justify-between"><span className="text-xs text-slate-500">{content.length}/2000</span><button type="submit" disabled={loading || !content.trim()} className="rounded-xl bg-indigo-500 px-5 py-2.5 font-bold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50">{loading ? 'Paylaşılıyor…' : 'Paylaş'}</button></div>
     </form>
   );
-};
+}
 
-export default PostForm;
+[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

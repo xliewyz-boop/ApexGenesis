@@ -1,65 +1,67 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { isSupabaseConfigured, supabase } from '../lib/supabase.js';
 
-const AuthContext = createContext();
-
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+const AuthContext = createContext(null);
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        // Check if token is expired
-        if (decoded.exp * 1000 < Date.now()) {
-          localStorage.removeItem('token');
-          setUser(null);
-        } else {
-          setUser({
-            id: decoded.userId,
-            username: decoded.username,
-            email: decoded.email,
-          });
-        }
-      } catch (error) {
-        localStorage.removeItem('token');
-        setUser(null);
-      }
+    if (!isSupabaseConfigured || !supabase) {
+      setLoading(false);
+      return undefined;
     }
-    setLoading(false);
+    let alive = true;
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) console.error('Supabase session lookup failed:', error.message);
+      if (alive) {
+        setUser(data?.session?.user ?? null);
+        setLoading(false);
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+    return () => {
+      alive = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const login = (token) => {
-    localStorage.setItem('token', token);
-    const decoded = jwtDecode(token);
-    setUser({
-      id: decoded.userId,
-      username: decoded.username,
-      email: decoded.email,
-    });
+  const signIn = async (email, password) => {
+    if (!supabase) throw new Error('Supabase bağlantısı yapılandırılmamış. .env ayarlarını kontrol edin.');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    setUser(data.user);
+    return data;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const signUp = async (email, password, username) => {
+    if (!supabase) throw new Error('Supabase bağlantısı yapılandırılmamış. .env ayarlarını kontrol edin.');
+    const { data, error } = await supabase.auth.signUp({
+      email, password, options: { data: { username } },
+    });
+    if (error) throw error;
+    if (data.user && data.session) setUser(data.user);
+    return data;
+  };
+
+  const logout = async () => {
+    if (supabase) {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    }
     setUser(null);
   };
 
-  const value = {
-    user,
-    login,
-    logout,
-    loading,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, signIn, signUp, logout, loading, isSupabaseConfigured }}>
       {!loading && children}
     </AuthContext.Provider>
   );
 };
+
+[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

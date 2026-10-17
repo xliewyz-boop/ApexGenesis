@@ -1,0 +1,316 @@
+[
+  {
+    "rank": "GOLD",
+    "color": "#d8a14b",
+    "summary": "Build consistency before speed. Focus on clean touches, recoveries and repeatable basic mechanics.",
+    "lessons": [
+      {
+        "title": "Ground control & power shots",
+        "focus": "First touch, ball-carrying, shooting with purpose",
+        "duration": "15 min",
+        "steps": [
+          "Free Play: carry the ball for 60 seconds without losing close control; repeat 5 times.",
+          "Shoot 20 balls from the top of the box: aim for corners, not the middle.",
+          "After every shot, land on all four wheels and turn back into play."
+        ],
+        "mistakes": [
+          "Hitting every ball as hard as possible",
+          "Flipping through the ball and losing recovery"
+        ],
+        "videoSearch": "Rocket League Gold rank ground control power shots tutorial"
+      },
+      {
+        "title": "Basic aerial reads",
+        "focus": "Read the arc, take off early, make one controlled touch",
+        "duration": "12 min",
+        "steps": [
+          "Use an aerial training pack and call the landing point before takeoff.",
+          "Complete 10 simple aerial contacts with the nose pointed toward the target.",
+          "Prioritize a clean first touch over an immediate second touch."
+        ],
+        "mistakes": [
+          "Chasing from directly underneath the ball",
+          "Boosting before aligning the car"
+        ],
+        "videoSearch": "Rocket League beginner aerials tutorial Gold Platinum"
+      },
+      {
+        "title": "Rotation & back-post defense",
+        "focus": "Stop double commits and defend from the back post",
+        "duration": "10 min",
+        "steps": [
+          "In 3v3, rotate out after your challenge instead of circling the ball.",
+          "When last back, approach the back post and face the play.",
+          "Play 3 casual matches tracking only double commits and defensive spacing."
+        ],
+        "mistakes": [
+          "Following teammates into the same corner",
+          "Driving across the goal mouth toward the ball"
+        ],
+        "videoSearch": "Rocket League back post rotation beginner tutorial"
+      }
+    ]
+  },
+  {
+    "rank": "PLATINUM",
+    "color": "#72c9d6",
+    "summary": "Turn fundamentals into reliable habits: faster recoveries, deliberate challenges and controlled aerials.",
+    "lessons": [
+      {
+        "title": "Fast aerial foundations",
+        "focus": "Efficient jump timing and boost path",
+        "duration": "15 min",
+        "steps": [
+          "In Free Play, practice jump + tilt + second jump + boost as one fluid motion.",
+          "Make 15 aerial contacts while keeping forward momentum.",
+          "Compare takeoff timing from stationary and moving starts."
+        ],
+        "mistakes": [
+          "Holding pitch back too long",
+          "Burning all boost before reaching the ball"
+        ],
+        "videoSearch": "Rocket League fast aerial tutorial Platinum rank"
+      },
+      {
+        "title": "Wall reads & clears",
+        "focus": "Predict the bounce and clear to space",
+        "duration": "12 min",
+        "steps": [
+          "Start with wall shots from both sides; read the rebound before jumping.",
+          "Make 10 defensive clears toward the side wall rather than center.",
+          "After each clear, recover to a useful position instead of watching the ball."
+        ],
+        "mistakes": [
+          "Clearing the ball straight into the middle",
+          "Jumping before reading the bounce"
+        ],
+        "videoSearch": "Rocket League wall reads defensive clears tutorial"
+      },
+      {
+        "title": "Boost routes & challenge timing",
+        "focus": "Maintain pressure without abandoning defense",
+        "duration": "10 min",
+        "steps": [
+          "Play one match collecting small pads along your rotation path.",
+          "Challenge when you can touch the ball or force a predictable opponent touch.",
+          "After a lost challenge, rotate out and let the next teammate engage."
+        ],
+        "mistakes": [
+          "Detouring for corner boost while play is dangerous",
+          "Challenging from a hopeless distance"
+        ],
+        "videoSearch": "Rocket League boost management challenge timing tutorial"
+      }
+    ]
+  },
+  {
+    "rank": "DIAMOND",
+    "color": "#5796f5",
+    "summary": "Improve first-touch quality, recoveries and decision-making under pressure.",
+    "lessons": [
+      {
+        "title": "Air-roll control & recovery",
+        "focus": "Orient the car and land with momentum",
+        "duration": "15 min",
+        "steps": [
+          "In Free Play, jump and make small air-roll corrections toward a target wall.",
+          "Land on side walls and floors with wheels aligned to the surface.",
+          "Chain landing into a powerslide turn and immediate re-entry."
+        ],
+        "mistakes": [
+          "Constant air roll without a target",
+          "Landing sideways and losing momentum"
+        ],
+        "videoSearch": "Rocket League air roll control recovery tutorial Diamond"
+      },
+      {
+        "title": "Dribble control & flick selection",
+        "focus": "Carry the ball and choose a controlled flick",
+        "duration": "15 min",
+        "steps": [
+          "Carry the ball at low speed for 30 seconds, repeat from both sides.",
+          "Practice front flicks and 45-degree flicks with a deliberate target.",
+          "Use a flick only when the defender commits or space is closing."
+        ],
+        "mistakes": [
+          "Flicking immediately on every possession",
+          "Letting the ball roll too far ahead"
+        ],
+        "videoSearch": "Rocket League dribbling flicks tutorial Diamond rank"
+      },
+      {
+        "title": "Shadow defense & controlled challenges",
+        "focus": "Delay the attack and force a poor touch",
+        "duration": "12 min",
+        "steps": [
+          "In 1v1, shadow from a safe distance while matching the attacker's speed.",
+          "Keep your car between the ball and your net without diving early.",
+          "Challenge when the attacker loses close control or exposes the ball."
+        ],
+        "mistakes": [
+          "Turning toward the ball too early",
+          "Giving the attacker a free cut around you"
+        ],
+        "videoSearch": "Rocket League shadow defense controlled challenges tutorial"
+      }
+    ]
+  },
+  {
+    "rank": "CHAMPION",
+    "color": "#bd74e8",
+    "summary": "Reduce unforced errors, build purposeful possession and convert pressure into team advantage.",
+    "lessons": [
+      {
+        "title": "Possession & outplay decisions",
+        "focus": "First touch away from pressure and controlled 50s",
+        "duration": "15 min",
+        "steps": [
+          "In Free Play, take the first touch away from the nearest imaginary defender.",
+          "Practice soft touches, cuts and low 50s rather than defaulting to a hard hit.",
+          "Review replays and mark every possession lost with no pressure applied."
+        ],
+        "mistakes": [
+          "Giving away possession with panic clears",
+          "Forcing a dribble when a safe pass is available"
+        ],
+        "videoSearch": "Rocket League Champion rank possession outplays tutorial"
+      },
+      {
+        "title": "Backboard reads & second touches",
+        "focus": "Turn rebounds into controlled shots or passes",
+        "duration": "15 min",
+        "steps": [
+          "Use a backboard pack and predict the rebound before the first contact.",
+          "Aim the second touch at a corner or teammate lane, not just toward net.",
+          "Recover immediately after a missed read and cover the counter."
+        ],
+        "mistakes": [
+          "Jumping without reading the rebound",
+          "Overcommitting as second man"
+        ],
+        "videoSearch": "Rocket League backboard reads second touch tutorial Champion"
+      },
+      {
+        "title": "3v3 spacing & third-man discipline",
+        "focus": "Maintain layered pressure and counterattack safety",
+        "duration": "12 min",
+        "steps": [
+          "Review 3 replays and pause when your team has possession.",
+          "Check whether first, second and third man have distinct lanes.",
+          "As third man, advance only when the ball and teammates' recovery make it safe."
+        ],
+        "mistakes": [
+          "Second and third man entering the same lane",
+          "Following the attack beyond a safe recovery line"
+        ],
+        "videoSearch": "Rocket League 3v3 rotation Champion GC third man tutorial"
+      }
+    ]
+  },
+  {
+    "rank": "GRAND CHAMPION",
+    "color": "#ef7d63",
+    "summary": "Refine speed, consistency and high-level reads. Train the decisions that separate clean pressure from reckless commits.",
+    "lessons": [
+      {
+        "title": "High-speed recoveries & wave dashes",
+        "focus": "Preserve momentum through landings and transitions",
+        "duration": "15 min",
+        "steps": [
+          "Practice landing nose-first, then chain a powerslide or wave dash into movement.",
+          "Run a 60-second route through walls, corners and pads without stopping.",
+          "Review failed recoveries and identify the landing angle that caused lost speed."
+        ],
+        "mistakes": [
+          "Using mechanics when a simple landing is faster",
+          "Landing with no planned next route"
+        ],
+        "videoSearch": "Rocket League Grand Champion recovery wave dash tutorial"
+      },
+      {
+        "title": "Advanced first touch & air-dribble control",
+        "focus": "Keep options open after the first contact",
+        "duration": "18 min",
+        "steps": [
+          "Start from wall setup and vary the first touch: soft, lateral and low.",
+          "Maintain a reachable distance to the ball; use boost in short corrections.",
+          "End each attempt with a planned shot, pass or safe reset."
+        ],
+        "mistakes": [
+          "Chasing the ball instead of matching its path",
+          "Using boost to correct a bad setup too late"
+        ],
+        "videoSearch": "Rocket League advanced air dribble first touch Grand Champion tutorial"
+      },
+      {
+        "title": "Replay review: challenge efficiency",
+        "focus": "Measure whether challenges create useful outcomes",
+        "duration": "15 min",
+        "steps": [
+          "Review one close loss and tag every challenge as win, neutral or lost.",
+          "For lost challenges, record distance, teammate cover and opponent control.",
+          "Choose one repeated mistake and train it for 10 minutes in Free Play."
+        ],
+        "mistakes": [
+          "Judging a challenge only by whether you touched the ball",
+          "Ignoring the teammate who had to cover your miss"
+        ],
+        "videoSearch": "Rocket League Grand Champion replay analysis challenge selection"
+      }
+    ]
+  },
+  {
+    "rank": "SSL",
+    "color": "#f3d56c",
+    "summary": "Optimize decision quality, adaptability and repeatability. Every drill should target a specific measurable weakness.",
+    "lessons": [
+      {
+        "title": "Micro-adjustments & high-level shooting",
+        "focus": "Precise contact points at game speed",
+        "duration": "18 min",
+        "steps": [
+          "Choose 3 shot types you miss under pressure and define a target corner for each.",
+          "Run 10 reps per shot type at full approach speed; count only on-target attempts.",
+          "Change one variable at a time: approach angle, first touch or contact point."
+        ],
+        "mistakes": [
+          "Grinding reps without tracking accuracy",
+          "Changing multiple variables between attempts"
+        ],
+        "videoSearch": "Rocket League SSL shooting consistency high level training"
+      },
+      {
+        "title": "Adaptive 1v1 pressure & boost denial",
+        "focus": "Force predictable touches and control resource lanes",
+        "duration": "15 min",
+        "steps": [
+          "Track opponent boost and likely next touch during each possession.",
+          "Use low-commitment challenges to force a touch before taking space.",
+          "After winning possession, deny a resource lane only when the net remains covered."
+        ],
+        "mistakes": [
+          "Overcommitting to boost denial",
+          "Respecting opponent space without applying pressure"
+        ],
+        "videoSearch": "Rocket League SSL 1v1 boost management pressure tutorial"
+      },
+      {
+        "title": "Pro-level 3v3 review & role switching",
+        "focus": "Adapt spacing to teammate speed and match state",
+        "duration": "20 min",
+        "steps": [
+          "Review a high-level replay and map who is first, second and third man at each transition.",
+          "Note when a role swap is correct because a teammate has a better line to the ball.",
+          "Build a short checklist for your team's most frequent transition errors."
+        ],
+        "mistakes": [
+          "Following fixed rotation rules when the play has changed",
+          "Ignoring score, time and opponent positioning"
+        ],
+        "videoSearch": "Rocket League SSL pro 3v3 rotation replay analysis"
+      }
+    ]
+  }
+]
+
+[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

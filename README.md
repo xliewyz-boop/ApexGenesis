@@ -36,15 +36,18 @@ The NSIS installer is written to `release/ApexGenesis-Setup-1.2.0-x64.exe`. The 
 - Theme color and animation preferences.
 - Automated smoke checks and Windows installer build configuration.
 
-## Important deployment status
+## Online web companion status
 
-This build is a **local desktop release**, not yet a multi-user online platform.
+The React/Vite web companion in `frontend/` is now wired to Supabase Auth and Postgres for sign-in, profiles, community posts, follows, teams, tournament registration, announcements, rank-training progress, and the virtual shop.
 
-- Profiles, team/player/tournament records, Genesis Coin, inventory, and announcements are stored in this installation's browser storage.
-- The admin screen is a local management screen; it is not protected by server-side administrator roles.
-- The official Rocket League news page returned HTTP 403 from this machine's network during validation. The app tries rocketleague.com/news first and falls back to the official Rocket League Steam announcements API when blocked; the UI labels the fallback source. No sample news is fabricated.
-- The React/Vite prototype and Express/SQLite prototype in `frontend/` and `backend/` are not included in the Windows installer. They have not been integrated into a production cloud backend.
-- Cross-device accounts, verified email, online synchronization, real-time tournaments, server-enforced roles, remote economy transactions, automated news synchronization, and public hosting require a deployed backend and owner-controlled hosting credentials. Do not market those features as operational until they are configured and tested.
+- Database schema and RLS policies are in `supabase/migrations/20261017000000_initial_schema.sql`. This SQL must be run in the intended Supabase project before the web pages can use the tables.
+- Local web environment values belong in `frontend/.env`; the file is ignored by Git. Only the Supabase project URL and publishable key belong in the client.
+- Wallet transactions cannot be written directly by the browser. Shop purchases use a server-side Postgres function with balance and ownership checks.
+- A web build passing does not mean that the SQL migration has been applied, email confirmation tested, admin role assigned, or website deployed.
+- The React/Vite web companion is separate from the Electron desktop app; this update does not silently replace the desktop app's local data with cloud data.
+- The official Rocket League news page returned HTTP 403 from this machine's network during validation. The desktop app tries rocketleague.com/news first and falls back to the official Rocket League Steam announcements API when blocked; the UI labels the fallback source. No sample news is fabricated.
+- The web frontend has Vercel SPA rewrite configuration. To publish it, create/select a Vercel project with root directory `frontend`, configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, and set the final HTTPS URL in Supabase Auth settings.
+- The old Express/SQLite prototype in `backend/` is not part of the online web stack and should not be deployed as-is.
 
 The previous generated seed records for teams, players, tournaments, and news were removed from the active app to avoid presenting fabricated community information as real. They are preserved under `data/legacy-seed-backup/` in the development project and are excluded from the installer.
 
@@ -53,3 +56,5 @@ The previous generated seed records for teams, players, tournaments, and news we
 Run `npm test` to check required files, JSON validity, JavaScript syntax, Electron security settings, tab loading structure, and regression checks for the old fake login and training placeholder.
 
 The installer is not code-signed. Windows SmartScreen may display a warning until the publisher signs the executable with a trusted code-signing certificate.
+
+[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

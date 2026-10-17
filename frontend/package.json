@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
     "axios": "^1.20.0",
     "jwt-decode": "^4.0.0",
     "react": "^19.2.8",
@@ -28,3 +29,5 @@
     "vite": "^8.3.0"
   }
 }
+
+[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

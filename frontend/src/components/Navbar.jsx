@@ -2,55 +2,15 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
-const Navbar = () => {
+const navClass = "rounded-lg px-3 py-2 text-sm font-semibold text-slate-300 transition hover:bg-slate-800 hover:text-white";
+export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const handleLogout = (e) => {
-    e.preventDefault();
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try { await logout(); navigate('/login'); }
+    catch (error) { console.error('Logout failed:', error); }
   };
+  return <nav className="border-b border-slate-800 bg-slate-950 text-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3"><Link to="/" className="text-xl font-black tracking-tight text-white">APEX <span className="text-indigo-400">GENESIS</span></Link><div className="flex flex-wrap items-center gap-1">{!user ? <><Link to="/login" className={navClass}>Giriş</Link><Link to="/signup" className="rounded-lg bg-indigo-500 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-400">Kayıt ol</Link></> : <><Link to="/" className={navClass}>Akış</Link><Link to="/teams" className={navClass}>Takımlar</Link><Link to="/tournaments" className={navClass}>Turnuvalar</Link><Link to="/training" className={navClass}>Antrenman</Link><Link to="/shop" className={navClass}>Mağaza</Link><Link to="/announcements" className={navClass}>Duyurular</Link><Link to="/profile" className={navClass}>Profil</Link><button onClick={handleLogout} className={navClass}>Çıkış</button></>}</div></div></nav>;
+}
 
-  return (
-    <nav className="bg-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <Link to="/" className="flex-shrink-0 text-xl font-semibold text-indigo-600">
-              Apex Genesis
-            </Link>
-          </div>
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
-              {!user ? (
-                <>
-                  <Link to="/login" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Log in
-                  </Link>
-                  <Link to="/signup" className="ml-4 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Sign up
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Home
-                  </Link>
-                  <Link to="/profile" className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Profile
-                  </Link>
-                  <button onClick={handleLogout} className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Log out
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-};
-
-export default Navbar;
+[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]

@@ -1,87 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import axios from 'axios';
+import { supabase } from '../lib/supabase.js';
 import PostItem from '../components/PostItem.jsx';
 
-const Profile = () => {
+export default function Profile() {
   const { user } = useAuth();
+  const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
+  const [followers, setFollowers] = useState(0);
+  const [following, setFollowing] = useState(0);
+  const [form, setForm] = useState({ username: '', display_name: '', bio: '', rocket_league_rank: 'Unranked' });
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch user's posts
-        const postsRes = await axios.get(`/api/posts/user/${user.id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        setPosts(postsRes.data);
-
-        // Fetch follower count
-        const followersRes = await axios.get(`/api/users/${user.id}/followers`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        setFollowerCount(followersRes.data.length);
-
-        // Fetch following count
-        const followingRes = await axios.get(`/api/users/${user.id}/following`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        setFollowingCount(followingRes.data.length);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+    let active = true;
+    async function load() {
+      if (!supabase || !user) { setLoading(false); return; }
+      const [profileRes, postsRes, followersRes, followingRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('posts').select('id,user_id,content,created_at,profiles(username,display_name,avatar_url)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', user.id),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id),
+      ]);
+      if (!active) return;
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+        setForm({ username: profileRes.data.username || '', display_name: profileRes.data.display_name || '', bio: profileRes.data.bio || '', rocket_league_rank: profileRes.data.rocket_league_rank || 'Unranked' });
       }
-    };
-
-    if (user) {
-      fetchData();
+      setPosts(postsRes.data ?? []);
+      setFollowers(followersRes.count ?? 0);
+      setFollowing(followingRes.count ?? 0);
+      const firstError = profileRes.error || postsRes.error || followersRes.error || followingRes.error;
+      if (firstError) setMessage(firstError.message);
+      setLoading(false);
     }
-  }, [user]);
+    load().catch(err => { setMessage(err.message); setLoading(false); });
+    return () => { active = false; };
+  }, [user?.id]);
 
-  if (loading) {
-    return <div className="text-center py-12">Loading...</div>;
-  }
+  const saveProfile = async (event) => {
+    event.preventDefault();
+    if (!supabase || !user) return;
+    setSaving(true); setMessage('');
+    const { data, error } = await supabase.from('profiles').update({
+      username: form.username.trim().toLowerCase(),
+      display_name: form.display_name.trim(),
+      bio: form.bio.trim(),
+      rocket_league_rank: form.rocket_league_rank,
+    }).eq('id', user.id).select().single();
+    if (error) setMessage(error.message);
+    else { setProfile(data); setMessage('Profil kaydedildi.'); }
+    setSaving(false);
+  };
 
-  if (!user) {
-    return <div className="text-center py-12">Please log in to view your profile.</div>;
-  }
-
+  if (loading) return <p className="p-10 text-center text-slate-300">Profil yükleniyor…</p>;
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto py-6">
-        <h1 className="text-2xl font-bold mb-4">{user.username}'s Profile</h1>
-        <div className="flex items-center space-x-6 mb-6">
-          <div className="flex-1">
-            <p className="text-gray-600">Email: {user.email}</p>
-          </div>
-          <div className="text-center">
-            <p className="font-semibold">{followerCount}</p>
-            <p className="text-gray-600 text-sm">Followers</p>
-          </div>
-          <div className="text-center">
-            <p className="font-semibold">{followingCount}</p>
-            <p className="text-gray-600 text-sm">Following</p>
-          </div>
+    <div className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100">
+      <div className="mx-auto max-w-3xl">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <p className="text-xs font-bold uppercase tracking-[.25em] text-indigo-300">Oyuncu profili</p>
+          <h1 className="mt-2 text-3xl font-black">{profile?.display_name || profile?.username || user?.email}</h1>
+          <div className="mt-4 flex gap-6 text-sm text-slate-400"><span><b className="text-white">{followers}</b> takipçi</span><span><b className="text-white">{following}</b> takip</span><span><b className="text-white">{posts.length}</b> paylaşım</span></div>
+          <form onSubmit={saveProfile} className="mt-6 grid gap-4 sm:grid-cols-2">
+            <label className="text-sm text-slate-300">Kullanıcı adı<input required minLength={3} maxLength={24} pattern="[a-zA-Z0-9_]+" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" /></label>
+            <label className="text-sm text-slate-300">Görünen ad<input maxLength={60} value={form.display_name} onChange={e => setForm({ ...form, display_name: e.target.value })} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" /></label>
+            <label className="text-sm text-slate-300 sm:col-span-2">Hakkında<textarea rows={3} maxLength={280} value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" /></label>
+            <label className="text-sm text-slate-300 sm:col-span-2">Rocket League rank<select value={form.rocket_league_rank} onChange={e => setForm({ ...form, rocket_league_rank: e.target.value })} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white">{['Unranked','Bronze','Silver','Gold','Platinum','Diamond','Champion','Grand Champion','SSL'].map(rank => <option key={rank}>{rank}</option>)}</select></label>
+            <button disabled={saving} className="rounded-xl bg-indigo-500 px-5 py-3 font-bold hover:bg-indigo-400 disabled:opacity-50">{saving ? 'Kaydediliyor…' : 'Profili kaydet'}</button>
+          </form>
+          {message && <p role="status" className="mt-3 text-sm text-indigo-200">{message}</p>}
         </div>
-        <h2 className="text-xl font-bold mb-2">Your Posts</h2>
-        {posts.length > 0 ? (
-          posts.map(post => <PostItem key={post.id} post={{ ...post, username: user.username }} />)
-        ) : (
-          <p className="text-center text-gray-500 py-8">You haven't posted anything yet.</p>
-        )}
+        <h2 className="mb-4 mt-8 text-xl font-bold">Paylaşımlarım</h2>
+        <div className="space-y-4">{posts.length ? posts.map(post => <PostItem key={post.id} post={post} />) : <p className="rounded-xl border border-slate-800 p-6 text-slate-400">Henüz paylaşım yapmadın.</p>}</div>
       </div>
     </div>
   );
-};
+}
 
-export default Profile;
+[executed on device: WIN-JS1MMJ6G3LN (47b38491-93fe-4329-b37c-d57703e8bb81)]
