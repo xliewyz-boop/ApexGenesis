@@ -29,7 +29,7 @@
     const headers = { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' };
     if (accessToken) headers.Authorization = 'Bearer ' + accessToken;
     return parseResponse(await fetch(SUPABASE_URL + '/auth/v1/' + path, {
-      method: 'POST', headers, body: JSON.stringify(body || {})
+      method: 'POST', headers, body: JSON.stringify(body || {}), signal: AbortSignal.timeout(10000)
     }));
   }
   async function freshSession() {
@@ -41,7 +41,8 @@
       session = saveSession(await authRequest('token?grant_type=refresh_token', { refresh_token: session.refresh_token }));
       return session;
     } catch (error) {
-      clearSession();
+      // Keep the stored session on transient network/time-out failures. Clear only when Supabase rejects it.
+      if ([400, 401, 403].includes(error.status)) clearSession();
       throw error;
     }
   }
@@ -66,7 +67,7 @@
     if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
     if (opts.prefer) headers.Prefer = opts.prefer;
     const response = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
-      method: opts.method || 'GET', headers, body: opts.body === undefined ? undefined : JSON.stringify(opts.body)
+      method: opts.method || 'GET', headers, body: opts.body === undefined ? undefined : JSON.stringify(opts.body), signal: AbortSignal.timeout(10000)
     });
     return parseResponse(response);
   }
@@ -75,7 +76,7 @@
     if (!session) return null;
     try {
       const response = await fetch(SUPABASE_URL + '/auth/v1/user', {
-        headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + session.access_token }
+        headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + session.access_token }, signal: AbortSignal.timeout(10000)
       });
       if (response.status === 401 || response.status === 403) { clearSession(); return null; }
       return await parseResponse(response);
@@ -85,10 +86,10 @@
     }
   }
   async function signOut() {
-    const session = await freshSession();
     try {
+      const session = await freshSession();
       if (session) await parseResponse(await fetch(SUPABASE_URL + '/auth/v1/logout', {
-        method: 'POST', headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + session.access_token }
+        method: 'POST', headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + session.access_token }, signal: AbortSignal.timeout(10000)
       }));
     } finally { clearSession(); }
   }

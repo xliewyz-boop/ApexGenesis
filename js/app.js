@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function getTemplate(tab) {
     if (templates.has(tab)) return templates.get(tab);
-    const promise = fetch(tab + '.html', { cache: 'force-cache' }).then(response => {
+    const promise = fetch(tab + '.html', { cache: 'force-cache', signal: AbortSignal.timeout(8000) }).then(response => {
       if (!response.ok) throw new Error(tab + '.html yüklenemedi (HTTP ' + response.status + ')');
       return response.text();
     });
@@ -90,9 +90,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (source.src) {
           await new Promise((resolve, reject) => {
             const script = document.createElement('script');
+            let settled = false;
+            const finish = error => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(timeout);
+              script.onload = null;
+              script.onerror = null;
+              script.remove();
+              error ? reject(error) : resolve();
+            };
+            const timeout = setTimeout(() => finish(new Error('Sekme betiği zaman aşımına uğradı.')), 8000);
             script.src = new URL(source.src, new URL(tab + '.html', location.href)).href;
-            script.onload = () => { script.remove(); resolve(); };
-            script.onerror = () => { script.remove(); reject(new Error('Sekme betiği yüklenemedi.')); };
+            script.onload = () => finish();
+            script.onerror = () => finish(new Error('Sekme betiği yüklenemedi.'));
             document.head.appendChild(script);
           });
         } else if (source.text.trim()) {

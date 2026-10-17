@@ -49,7 +49,8 @@ All three SQL migration files listed above have been applied to the configured S
 - `rank_verification` tickets should be reviewed manually before staff changes the rank.
 
 ## Performance and UI
-- Electron `js/app.js` caches tab HTML promises, ignores stale loads, removes active tab styles, and cleans tab-specific intervals/observers.
+- Electron `js/app.js` caches tab HTML promises, ignores stale loads, removes active tab styles, and cleans tab-specific intervals/observers. Tab HTML fetches time out after 8 seconds and external tab scripts after 8 seconds, so a broken resource displays a retryable error instead of leaving the loading state indefinitely.
+- Supabase Auth/REST fetches in the Electron bridge time out after 10 seconds. Transient refresh failures preserve the stored session; sign-out clears the local session even if refreshing or the logout request fails.
 - News fetch is cached for ten minutes and returns at most the ten newest source entries. It tries rocketleague.com/news then official Steam announcements on failure; images are extracted when available.
 - Web routes use React.lazy/Suspense. Last measured main JS chunk was ~482 KB minified/~140 KB gzip, with separate lazy page chunks.
 - Scroll reveal is limited to content-heavy pages and respects `prefers-reduced-motion`. Electron settings can disable animations.

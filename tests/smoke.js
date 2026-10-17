@@ -55,6 +55,8 @@ assert.doesNotMatch(preload, /invoke: \(channel, \.\.\.args\) => ipcRenderer\.in
 assert.match(app, /active-tab-style/);
 assert.match(app, /function cleanupActiveTab\(\)/);
 assert.match(app, /cache: 'force-cache'/);
+assert.match(app, /AbortSignal\.timeout\(8000\)/, 'Tab template requests must fail rather than leave the loading screen stuck');
+assert.match(app, /Sekme betiği zaman aşımına uğradı/);
 assert.match(app, /new Map\(\)/);
 assert.match(index, /apexCloud\.getCurrentUser\(\)/);
 assert.match(index, /window\.location\.replace\('login\.html'\)/);
@@ -67,6 +69,9 @@ assert.match(login, /E-posta doğrulama/);
 assert.doesNotMatch(login, /accept any non-empty credentials/i);
 assert.match(cloud, /token\?grant_type=password/);
 assert.match(cloud, /token\?grant_type=refresh_token/);
+assert.match(cloud, /AbortSignal\.timeout\(10000\)/, 'Supabase requests must not wait indefinitely');
+assert.match(cloud, /if \(\[400, 401, 403\]\.includes\(error\.status\)\) clearSession\(\)/, 'Transient refresh failures must not discard the session');
+assert.match(cloud, /async function signOut\(\)[\s\S]*?finally \{ clearSession\(\); \}/, 'Sign-out must clear local session even if the network fails');
 assert.match(cloud, /Authorization: 'Bearer '/);
 assert.match(cloud, /async function getProfile\(userId\)/);
 assert.match(cloud, /async function saveProfile\(fields\)/);
