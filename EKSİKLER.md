@@ -32,7 +32,7 @@ Son gözden geçirme: 17 Ekim 2026. Bu liste tamamlanan işleri ve kalan, dış 
 - [x] Web npm run build geçti.
 - [x] Web npm run lint: 0 hata, 25 uyarı (çoğu React hooks/effect bağımlılıkları); uyarılar tamamen temizlenmiş değil.
 - [x] Üretim Vercel dağıtımı READY durumunda; `/`, `/login`, `/signup`, `/support`, `/admin`, ana JS/CSS, Support chunk ve favicon HTTP 200 döndü. SPA rotaları için rewrite eklendi ve tekrar kontrol edildi.
-- [ ] Son yerel Electron/SQL/docs değişiklikleri GitHub `main` dalına gönderilmeli; doğrudan Vercel dağıtımı şu an çalışıyor, ancak son kaynak değişikliklerinin Git geçmişinde tutulması ayrıca gerekli.
+- [x] Electron/SQL/docs değişiklikleri GitHub `main` dalına gönderildi; Vercel'in Git-triggered production deployment'ı READY oldu ve SPA/asset HTTP kontrolleri geçti. Güncel deployment ID, yeni push'larda değiştiği için Vercel projesinden kontrol edilmeli.
 
 ## Kalanlar / dürüst sınırlamalar
 

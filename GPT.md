@@ -57,11 +57,11 @@ All three SQL migration files listed above have been applied to the configured S
 
 ## Deployment status and caveats
 - Production URL: `https://apex-genesis-web.vercel.app`.
-- Current production deployment: `dpl_3TJMSmLqQduLQTavsvUxiNUVmeFA` (READY, direct static upload, alias `apex-genesis-web.vercel.app`). The Vite build from the local frontend was uploaded with a rewrite-only `vercel.json` and immutable caching for `/assets/*`.
-- Production HTTP checks passed: `/`, `/login`, `/signup`, `/support`, `/admin`, main JS, CSS, Support chunk, and favicon all returned HTTP 200. Before adding the rewrite config, SPA routes returned 404; the rewrite was added and re-tested successfully.
+- Production deployment: the latest Git-triggered Vercel production deployment from GitHub `main` reached READY after the source/migration push. The connected production alias is `https://apex-genesis-web.vercel.app`.
+- Production HTTP checks passed after deployment: `/`, `/login`, `/signup`, `/support`, `/admin`, main JS, and CSS all returned HTTP 200. The rewrite is provided by the repository's root `vercel.json`.
 - Build/lint last passed: web build succeeded; oxlint had 25 warnings (React hook/effect/exhaustive-deps), zero errors.
-- Root `vercel.json` builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes for Git-based deployments. The current direct deployment reflects the generated frontend dist; root Electron/docs changes still need GitHub push to be preserved in repository history and trigger a standard Git deployment.
-- The connected Vercel MCP could deploy without a Git token, but local `vercel whoami` reports Logged out. Do not claim the local CLI is authenticated; direct MCP deployments are currently verified.
+- Root `vercel.json` builds `frontend/`, publishes `frontend/dist`, and rewrites SPA routes. Vercel Git deployments automatically rebuild on pushes to `main`; deployment IDs change with every push, so inspect the Vercel project for the current ID.
+- Local `vercel whoami` reports Logged out; deployment used the connected Vercel integration. No local CLI login is assumed.
 - HTTP smoke checks do not prove all authenticated workflows. Still test signup/email confirmation, profile updates, Member rank denial, Member team-creation denial, Owner role management, and real-time ticket exchange with separate Member/staff accounts.
 - A production HTTP 200 is not proof of all workflows. Test signup/email confirmation, profile updates, rank denial for Member, team creation denial for Member, Owner role management, ticket messaging, and support status changes.
 - The old Express/SQLite prototype in `backend/` is not the production web stack and should not be deployed as-is.
