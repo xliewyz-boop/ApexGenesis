@@ -19,6 +19,9 @@ Son gözden geçirme: 17 Ekim 2026. Bu liste tamamlanan işleri ve kalan, dış 
 - [x] Profil, mağaza, ana sayfa ve turnuva özeti çevrim içi veriyi kullanır.
 - [x] Antrenman ilerlemesi training_progress tablosuna kaydedilir.
 - [x] Sekme HTML önbelleği, eski yüklemeleri iptal etme, zamanlayıcı temizliği, sayfa bazlı scroll-reveal ve reduced-motion desteği.
+- [x] Sekme HTML yüklemesi 8 saniye, sekme script'i 8 saniye, Supabase Auth/REST istekleri 10 saniye zaman aşımına sahip; sonsuz yükleme yerine tekrar denenebilir hata gösterilir.
+- [x] Geçici token yenileme ağ hatası mevcut oturumu silmez; çıkış işlemi ağ hatasında da yerel oturumu temizler.
+- [x] Vercel'de hash'li `/assets/*` dosyaları bir yıl immutable önbelleklenir; HTML varsayılan olarak yeniden doğrulanır.
 - [x] Türkçe mağaza açıklaması UTF-8 olarak düzeltildi.
 - [x] GPT.md ve README.md devir/geliştirici belgeleri eklendi.
 

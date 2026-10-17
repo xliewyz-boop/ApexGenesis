@@ -138,6 +138,7 @@ assert.match(migration, /set description = 'Topluluk başlangıç rozeti\.'/);
 assert.ok(fs.existsSync(path.join(root, 'GPT.md')), 'Project handoff GPT.md must exist');
 const vercelConfig = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
 assert.equal(vercelConfig.outputDirectory, 'frontend/dist');
+assert.ok(vercelConfig.headers.some(rule => rule.source === '/assets/(.*)' && rule.headers.some(header => header.key === 'Cache-Control' && header.value.includes('immutable'))), 'Hashed frontend assets should use immutable caching');
 assert.match(vercelConfig.installCommand, /cd frontend && npm install/);
 assert.match(vercelConfig.buildCommand, /cd frontend && npm run build/);
 const webApp = fs.readFileSync(path.join(root, 'frontend/src/App.jsx'), 'utf8');
