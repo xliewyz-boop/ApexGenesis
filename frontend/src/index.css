@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+:root { color-scheme: dark; scroll-behavior: smooth; }
+body { margin: 0; background: #020617; color: #f1f5f9; text-rendering: optimizeLegibility; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, a { transition: background-color .16s ease, color .16s ease, border-color .16s ease, transform .16s ease; }
+button:active { transform: scale(.99); }
+.scroll-reveal { opacity: 0; transform: translate3d(0,16px,0); transition: opacity .38s ease var(--reveal-delay,0ms), transform .38s cubic-bezier(.2,.7,.2,1) var(--reveal-delay,0ms); }
+.scroll-reveal.is-revealed { opacity: 1; transform: translate3d(0,0,0); }
+@media (prefers-reduced-motion: reduce) {
+  :root { scroll-behavior: auto !important; }
+  *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .scroll-reveal { opacity: 1 !important; transform: none !important; }
+}

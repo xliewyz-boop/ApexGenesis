@@ -1,6 +1,22 @@
 <div class="tab-content">
     <h2>Yönetim Merkezi</h2>
-    <p class="admin-scope-note">Bu paneldeki değişiklikler şu anda yalnızca bu cihazda saklanır; çevrim içi yönetici yetkilendirmesi bağlı değildir.</p>
+    <p class="admin-scope-note">Çevrim içi işlemler Supabase rolü ve RLS ile doğrulanır. Yerel haber listesi eski cihaz içi uyumluluk bölümüdür.</p>
+    <div class="admin-section">
+      <h3>Çevrim içi rank doğrulama</h3>
+      <form id="onlineRankForm" class="online-admin-form"><input id="onlineRankUsername" required placeholder="Oyuncu adı"><select id="onlineRankValue"><option>Unranked</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option><option>Diamond</option><option>Champion</option><option>Grand Champion</option><option>SSL</option></select><button type="submit">Rank kaydet</button></form>
+      <p id="onlineRankStatus" role="status"></p>
+    </div>
+    <div class="admin-section">
+      <h3>Çevrim içi duyuru yayınla</h3>
+      <form id="onlineAnnouncementForm" class="online-admin-form"><input id="onlineAnnouncementTitle" required maxlength="160" placeholder="Başlık"><textarea id="onlineAnnouncementBody" required maxlength="10000" rows="4" placeholder="Duyuru metni"></textarea><input id="onlineAnnouncementImage" type="url" placeholder="Görsel URL (isteğe bağlı)"><button type="submit">Tüm kullanıcılara yayınla</button></form>
+      <p id="onlineAnnouncementStatus" role="status"></p>
+    </div>
+    <div class="admin-section" id="ownerRoleSection" hidden>
+      <h3>Owner · Personel rolü yönetimi</h3>
+      <form id="onlineRoleForm" class="online-admin-form"><input id="onlineRoleUsername" required placeholder="Tam kullanıcı adı"><select id="onlineRoleValue"><option value="admin">Admin</option><option value="owner">Owner</option></select><button type="submit">Rol ata</button></form>
+      <p id="onlineRoleStatus" role="status"></p><div id="onlineStaffList"></div>
+    </div>
+    <div class="admin-section"><h3>Canlı müşteri desteği</h3><p>Üye ticket'ları, rank doğrulama talepleri ve destek yazışmaları için çevrim içi destek masasına geç.</p><button type="button" data-go-tab="support">Destek kuyruğunu aç</button></div>
     <div class="admin-section">
         <h3>Yerel profil durumu</h3>
         <div id="userList"></div>
@@ -121,6 +137,72 @@
     loadUsers();
     loadAdminNews();
 </script>
+<script>
+(async function initOnlineAdmin() {
+  const api = window.apexCloud;
+  const byId = id => document.getElementById(id);
+  const status = (id, text, bad=false) => { const el=byId(id); if(el){el.textContent=text;el.style.color=bad?'#ff8c8c':'#6ce6ae';} };
+  try {
+    const role = await api.getRole();
+    if (role === 'member') {
+      document.querySelector('.tab-content').replaceChildren(Object.assign(document.createElement('h2'),{textContent:'Yönetici erişimi gerekli'}));
+      return;
+    }
+    byId('ownerRoleSection').hidden = role !== 'owner';
+    byId('onlineRankForm').addEventListener('submit', async event => {
+      event.preventDefault(); const username=byId('onlineRankUsername').value.trim().toLowerCase(); const rank=byId('onlineRankValue').value;
+      status('onlineRankStatus','Profil aranıyor…');
+      try {
+        const rows=await api.select('profiles','select=id,username&username=eq.'+encodeURIComponent(username)+'&limit=1');
+        if(!Array.isArray(rows)||!rows[0])throw new Error('Bu kullanıcı adı bulunamadı.');
+        const updated=await api.update('profiles','id=eq.'+encodeURIComponent(rows[0].id),{rocket_league_rank:rank});
+        if(!Array.isArray(updated)||!updated.length)throw new Error('Rank kaydedilemedi. Yeni veritabanı migration dosyası uygulanmış mı?');
+        status('onlineRankStatus','@'+rows[0].username+' rank değeri güncellendi: '+rank);
+      } catch(error){status('onlineRankStatus',error.message||'İşlem başarısız.',true);}
+    });
+    byId('onlineAnnouncementForm').addEventListener('submit', async event => {
+      event.preventDefault(); status('onlineAnnouncementStatus','Duyuru yayınlanıyor…');
+      try {
+        const title=byId('onlineAnnouncementTitle').value.trim(), body=byId('onlineAnnouncementBody').value.trim(), raw=byId('onlineAnnouncementImage').value.trim();
+        const image_url=raw?safeHttpUrl(raw):null;
+        if(raw&&(!image_url||!/^https?:/i.test(image_url)))throw new Error('Görsel bağlantısı HTTP(S) olmalı.');
+        const rows=await api.insert('announcements',{title,body,image_url,is_published:true,created_by:(await api.getCurrentUser()).id});
+        if(!Array.isArray(rows)||!rows.length)throw new Error('Duyuru yayınlanamadı.');
+        byId('onlineAnnouncementForm').reset();status('onlineAnnouncementStatus','Duyuru tüm kullanıcılara yayınlandı.');
+      } catch(error){status('onlineAnnouncementStatus',error.message||'Duyuru yayınlanamadı.',true);}
+    });
+    if(role==='owner'){
+      async function renderStaff(){
+        const rows=await api.select('user_roles','select=user_id,role,created_at&order=created_at.desc&limit=100');
+        const container=byId('onlineStaffList');container.replaceChildren();
+        for(const item of (Array.isArray(rows)?rows:[])){
+          const line=document.createElement('div');line.className='online-staff-row';
+          const label=document.createElement('span');label.textContent=item.user_id.slice(0,8)+' · '+item.role;
+          const remove=document.createElement('button');remove.type='button';remove.textContent='Rolü kaldır';
+          remove.addEventListener('click',async()=>{try{await api.remove('user_roles','user_id=eq.'+encodeURIComponent(item.user_id)+'&role=eq.'+encodeURIComponent(item.role));await renderStaff();status('onlineRoleStatus','Personel rolü kaldırıldı.');}catch(error){status('onlineRoleStatus',error.message||'Rol kaldırılamadı.',true);}});
+          line.append(label,remove);container.append(line);
+        }
+      }
+      byId('onlineRoleForm').addEventListener('submit',async event=>{
+        event.preventDefault();const username=byId('onlineRoleUsername').value.trim().toLowerCase(),wanted=byId('onlineRoleValue').value;
+        try{
+          const profiles=await api.select('profiles','select=id,username&username=eq.'+encodeURIComponent(username)+'&limit=1');
+          if(!Array.isArray(profiles)||!profiles[0])throw new Error('Kullanıcı adı bulunamadı.');
+          if(profiles[0].id===(await api.getCurrentUser()).id&&wanted!=='owner')throw new Error('Kendi Owner rolünü bu formdan düşürme.');
+          const existing=await api.select('user_roles','select=role&user_id=eq.'+encodeURIComponent(profiles[0].id)+'&role=eq.'+encodeURIComponent(wanted)+'&limit=1');
+          if(Array.isArray(existing)&&existing.length)throw new Error('Bu kullanıcı bu role zaten sahip.');
+          await api.insert('user_roles',{user_id:profiles[0].id,role:wanted});
+          byId('onlineRoleForm').reset();status('onlineRoleStatus','@'+profiles[0].username+' için '+wanted+' rolü atandı.');await renderStaff();
+        }catch(error){status('onlineRoleStatus',error.message||'Rol atanamadı.',true);}
+      });
+      await renderStaff();
+    }
+  } catch(error){console.error('Online admin initialization failed:',error);status('onlineRankStatus','Çevrim içi yönetim başlatılamadı: '+(error.message||''),true);}
+})();
+</script>
+<style>
+.online-admin-form{display:grid;gap:10px;max-width:720px}.online-admin-form input,.online-admin-form select,.online-admin-form textarea{width:100%;padding:10px;border:1px solid #34483e;border-radius:7px;background:#0a100d;color:#eaf5ef}.online-admin-form button,.admin-section>button{justify-self:start;padding:10px 14px;border:0;border-radius:7px;background:var(--primary-color);color:#07110d;font-weight:800;cursor:pointer}.online-staff-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px;border-bottom:1px solid #2a3932;color:#dce9e1}.online-staff-row button{padding:7px 10px;border:1px solid #653c3c;border-radius:6px;background:#281818;color:#ffb5b5;cursor:pointer}
+</style>
 <style>
     .tab-content { padding: 20px; }
     .admin-scope-note { color: #d5bd8a; background: #211b10; border: 1px solid #4a3e25; border-radius: 8px; padding: 12px 14px; line-height: 1.6; margin: 0 0 18px; font-size: .84rem; }

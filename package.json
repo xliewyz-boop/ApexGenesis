@@ -1,6 +1,6 @@
 {
   "name": "apexgenesis",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Apex Genesis Rocket League community desktop application",
   "main": "main.js",
   "scripts": {
@@ -33,6 +33,7 @@
       "index.html",
       "login.html",
       "dashboard.html",
+      "support.html",
       "teams.html",
       "players.html",
       "tournaments.html",

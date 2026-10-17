@@ -103,6 +103,13 @@
     const rows = await select('profiles', 'select=id,username,display_name,bio,avatar_url,rocket_league_rank&id=eq.' + encodeURIComponent(user.id) + '&limit=1');
     return Array.isArray(rows) ? (rows[0] || null) : null;
   }
+  async function getRole(userId) {
+    const user = userId ? { id: userId } : await getCurrentUser();
+    if (!user) return 'member';
+    const rows = await select('user_roles', 'select=role&user_id=eq.' + encodeURIComponent(user.id));
+    const roles = Array.isArray(rows) ? rows.map(row => row.role) : [];
+    return roles.includes('owner') ? 'owner' : roles.includes('admin') ? 'admin' : roles.includes('moderator') ? 'admin' : 'member';
+  }
   async function saveProfile(fields) {
     const user = await getCurrentUser();
     if (!user) throw new Error('Giriş yapman gerekiyor.');
@@ -116,7 +123,7 @@
   }
 
   window.apexCloud = Object.freeze({
-    url: SUPABASE_URL, signIn, signUp, signOut, getCurrentUser, getProfile, saveProfile, select, insert, update, remove, rpc,
+    url: SUPABASE_URL, signIn, signUp, signOut, getCurrentUser, getProfile, getRole, saveProfile, select, insert, update, remove, rpc,
     isSignedIn: async () => Boolean(await getCurrentUser()),
     getSession: freshSession
   });

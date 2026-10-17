@@ -10,7 +10,9 @@
     if (window.apexNewsRefreshTimer) clearInterval(window.apexNewsRefreshTimer);
     let newsRefreshTimer = null;
     let newsLoading = false;
+    let newsDisposed = false;
     let lastOfficialItems = [];
+    window.apexTabCleanup = () => { newsDisposed = true; if (newsRefreshTimer) clearInterval(newsRefreshTimer); newsRefreshTimer = null; window.apexNewsRefreshTimer = null; };
     async function loadNews() {
         if (newsLoading) return;
         newsLoading = true;
@@ -31,6 +33,7 @@
             status.textContent = lastOfficialItems.length ? 'Bağlantı yenilenemedi; son başarılı haberler gösteriliyor. Otomatik yeniden deneme 10 dakikada bir yapılır.' : 'Haber kaynaklarına şu anda erişilemiyor. Örnek haber gösterilmiyor; resmî sayfayı açabilir veya daha sonra yeniden deneyebilirsin.';
             status.classList.add('news-status-warning');
         }
+        if (newsDisposed || !container.isConnected) { newsLoading = false; return; }
         const localItems = safeLocalNews();
         container.replaceChildren();
         if (localItems.length) {
@@ -54,7 +57,10 @@
             container.appendChild(empty);
         }
         newsLoading = false;
-        if (!newsRefreshTimer) { newsRefreshTimer = setInterval(loadNews, 10 * 60 * 1000); window.apexNewsRefreshTimer = newsRefreshTimer; }
+        if (!newsRefreshTimer) {
+            newsRefreshTimer = setInterval(loadNews, 10 * 60 * 1000);
+            window.apexNewsRefreshTimer = newsRefreshTimer;
+        }
     }
 
     function safeLocalNews() {

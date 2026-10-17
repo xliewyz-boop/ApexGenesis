@@ -1,8 +1,8 @@
-# Apex Genesis Desktop
+# Apex Genesis
 
-Apex Genesis is a Windows desktop companion for the Rocket League community, built with Electron and a dark, esports-focused interface.
+Apex Genesis is a Rocket League community platform with a Windows Electron desktop app and a React/Vite web companion. Both clients use the same Supabase authentication project; selected features share cloud data.
 
-## Run in development
+## Run and test locally
 
 Requirements: Node.js 20+ and npm.
 
@@ -12,49 +12,70 @@ npm test
 npm start
 ```
 
-## Build the Windows installer
+Web companion:
 
 ```powershell
-npm run dist
+cd frontend
+npm install
+npm run build
+npm run lint
+npm run dev
 ```
 
-The NSIS installer is written to `release/ApexGenesis-Setup-1.2.0-x64.exe`. The unpacked application is written to `release/win-unpacked/`.
+Build the Windows installer with `npm run dist`. The installer is written to `release/` and is not code-signed; Windows SmartScreen may warn until a trusted publisher certificate is used.
 
-## Current functionality
+## Desktop app
 
-- Custom Electron protocol for local HTML, CSS, scripts, images, and JSON resources.
-- Context-isolated renderer with Node integration disabled and external links opened in the system browser.
-- Local player profile with editable name, bio, avatar URL, and team selection.
-- Local team directory with create, search, and delete.
-- Local player directory with create, search, and delete.
-- Local tournament planner with create, filtering, local participation records, and delete.
-- Genesis Coin local wallet, transaction history, virtual shop, and inventory.
-- Local community announcements with add/delete and safe text rendering.
-- Training Academy with six rank tracks (Gold, Platinum, Diamond, Champion, Grand Champion, SSL), 18 rank-specific practice modules, detailed steps, common mistakes, durations, and curated YouTube search links (avoids embedding unverified video IDs).
-- Language selector for 15 locales: Turkish, English, Spanish, French, German, Brazilian Portuguese, Italian, Russian, Polish, Dutch, Japanese, Korean, Simplified Chinese, Arabic, and Hindi. Core navigation and selected interface labels are translated; some user-generated and long-form training text remains in its original language.
-- Rocket League news refreshes every 10 minutes. The app tries rocketleague.com/news first; if the official site returns HTTP 403 on the current network, it falls back to the official Rocket League Steam announcements feed and clearly labels that source.
-- Theme color and animation preferences.
-- Automated smoke checks and Windows installer build configuration.
+- Electron custom `apex://app/` protocol, context isolation, Node integration disabled, constrained preload bridge.
+- Supabase email/password login, persistent refreshable session, logout, and cloud profile sync.
+- Cloud-backed team directory: members may join/leave public teams; only Admin/Owner may create teams, enforced in both UI and RLS.
+- Support center with tickets, replies, status changes for staff, and seven-second polling in Electron; polling/subscriptions are cleaned up on tab changes.
+- Staff tools for rank verification, cloud announcements with optional images, and Owner-only staff role management.
+- Rocket League official news, top 10 entries, article/image extraction where provided by the source, 10-minute refresh/cache; falls back to the official Steam announcements feed when rocketleague.com is blocked.
+- Six training rank tracks (Gold, Platinum, Diamond, Champion, Grand Champion, SSL), 18 practice modules, and curated YouTube search links.
+- Fifteen locale choices remain in the app. Core navigation/shop text has been repaired to UTF-8; some older long-form locale content may still need editorial review.
+- Static tab HTML is cached in memory, stale tab loads are ignored, tab-specific timers are cleaned up, and scroll reveals are limited to content-heavy sections. Reduced-motion settings are respected.
 
-## Online web companion status
+Some legacy desktop features are still local-only: player directory, tournament planner, Genesis Coin wallet, and parts of the inventory/local announcement archive. They are not yet cross-device synced. The React web shop uses the secured server-side purchase function and online ledger.
 
-The React/Vite web companion in `frontend/` is now wired to Supabase Auth and Postgres for sign-in, profiles, community posts, follows, teams, tournament registration, announcements, rank-training progress, and the virtual shop.
+## Web companion
 
-- Database schema and Row Level Security policies from `supabase/migrations/20261017000000_initial_schema.sql` have been applied to the configured Supabase project and the expected PostgREST tables returned HTTP 200 during verification.
-- The public web companion is deployed at https://apex-genesis-web.vercel.app. Its root and SPA routes (`/login`, `/signup`) and built JS/CSS assets returned HTTP 200.
-- Supabase Auth allows sign-ups and has email confirmation enabled. The Site URL and redirect allowlist include the production Vercel domain; an actual new-user email confirmation still needs an end-to-end human mailbox test.
-- Local web environment values belong in `frontend/.env`; the file is ignored by Git. Only the Supabase project URL and publishable key belong in the client.
-- Wallet transactions cannot be written directly by the browser. Shop purchases use a server-side Postgres function with balance and ownership checks.
-- The Electron desktop app now uses the same Supabase email/password account system and synchronizes the basic profile (username, bio, avatar, rank) with the web companion. Its teams, player directory, tournaments, local Genesis Coin wallet, inventory, and local admin/news features have not all been migrated to cloud storage; they remain local features for now.
-- The web admin panel uses a server-side admin role and RLS. No admin role has been assigned because no owner account has yet been verified/selected; grant it only after creating and confirming the intended account.
-- Vercel production deployment is a verified file-based snapshot. Automatic GitHub-to-Vercel deployments could not be linked because the Vercel connector returned a scope authorization error; future code changes need another deployment until that connection is repaired.
-- The official Rocket League news page returned HTTP 403 from this machine's network during validation. The desktop app tries rocketleague.com/news first and falls back to the official Rocket League Steam announcements API when blocked; the UI labels the fallback source. No sample news is fabricated.
-- The old Express/SQLite prototype in `backend/` is not part of the online web stack and should not be deployed as-is.
+The React 19/Vite application lives in `frontend/`. It uses Supabase Auth and Postgres for profiles, posts, follows, teams, tournament registration, announcements, training progress, shop inventory/wallet, and support.
 
-The previous generated seed records for teams, players, tournaments, and news were removed from the active app to avoid presenting fabricated community information as real. They are preserved under `data/legacy-seed-backup/` in the development project and are excluded from the installer.
+- Lazy route imports split page code into separate chunks. The production main chunk is about 482 KB minified (about 140 KB gzip); page bundles are loaded when needed.
+- `frontend/.env` is ignored by Git. The browser uses only `VITE_SUPABASE_URL` and the public publishable key. Never add a service-role or `sb_secret_...` key to client code.
+- The production site is `https://apex-genesis-web.vercel.app`. Its current HTTP check returns 200, but it still serves the previous build (title `Apex Genesis - Rocket League Community`). Publishing this latest local build is blocked: the Vercel API rejects deployment writes with 403 for scope `xliew`, and the local Vercel CLI is logged out. The Vercel account/project scope must be re-authorized before production deployment; do not claim these local changes are live.
+
+## Supabase and permissions
+
+The initial schema is `supabase/migrations/20261017000000_initial_schema.sql`. The permissions/support migration is `supabase/migrations/20261017010000_roles_support_performance.sql`; both have been applied to the configured Supabase project.
+
+Verified after the second migration:
+- All 15 application tables have Row Level Security enabled.
+- Support tables `support_tickets` and `support_messages` exist and are included in the `supabase_realtime` publication.
+- The shop's seeded badge description now reads “Topluluk başlangıç rozeti.”
+- The confirmed project owner account has the `owner` role.
+
+Role model:
+- **Member**: default when no row exists in `user_roles`; regular features and own support tickets.
+- **Admin**: rank verification, announcements, team creation, support queue, tournaments/shop/wallet administration.
+- **Owner**: all Admin capabilities plus staff role assignment/revocation.
+- Legacy `moderator` rows are treated as staff for compatibility.
+- Rank changes are blocked server-side for members; team creation and staff role changes are protected by RLS. UI hiding is not considered a security boundary.
+
+The support queue uses Supabase Realtime in the web client, with periodic refresh as a fallback. Electron uses seven-second polling and cleans up its interval on navigation.
+
+## News source behavior
+
+The app attempts the official Rocket League news site first. Some networks receive HTTP 403; in that case the app uses the official Rocket League Steam announcements API. It shows the source label and does not fabricate sample stories. Images are extracted when available in article/announcement markup; a source that supplies no image may still produce a text-only card.
 
 ## Validation
 
-Run `npm test` to check required files, JSON validity, JavaScript syntax, Electron security settings, tab loading structure, and regression checks for the old fake login and training placeholder.
+- Root smoke tests: `npm test`.
+- Syntax checks: `node --check main.js`, `node --check js/cloud.js`, `node --check js/app.js`.
+- Web: `cd frontend && npm run build && npm run lint`. The current linter reports React hook/effect warnings but zero errors.
+- Run the production HTTP smoke check after each Vercel deployment. A successful build or HTTP 200 does not by itself prove every interactive workflow; test signup, email confirmation, ticket exchange, rank restrictions, and team creation using Member/Admin/Owner accounts.
 
-The installer is not code-signed. Windows SmartScreen may display a warning until the publisher signs the executable with a trusted code-signing certificate.
+## Project handoff
+
+Read `GPT.md` before making changes. It contains the architecture map, roles, migration state, validation steps, and remaining caveats. Keep that document current whenever behavior or deployment state changes.

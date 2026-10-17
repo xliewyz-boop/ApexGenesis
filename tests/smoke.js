@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const requiredFiles = [
-  'main.js', 'preload.js', 'index.html', 'login.html', 'js/cloud.js', 'dashboard.html', 'teams.html',
+  'main.js', 'preload.js', 'index.html', 'login.html', 'js/cloud.js', 'dashboard.html', 'support.html', 'teams.html',
   'players.html', 'tournaments.html', 'news.html', 'training.html',
   'shop.html', 'profile.html', 'settings.html', 'admin.html',
   'css/style.css', 'js/app.js', 'js/coins.js', 'js/i18n.js', 'data/rank-training.json'
@@ -25,7 +25,7 @@ for (const file of ['main.js', 'preload.js', 'js/cloud.js', 'js/app.js', 'js/coi
   assert.doesNotThrow(() => new vm.Script(source), `JavaScript syntax error in ${file}`);
 }
 
-for (const file of ['index.html', 'login.html', 'dashboard.html', 'teams.html', 'players.html', 'tournaments.html', 'news.html', 'training.html', 'shop.html', 'profile.html', 'settings.html', 'admin.html']) {
+for (const file of ['index.html', 'login.html', 'dashboard.html', 'teams.html', 'players.html', 'tournaments.html', 'news.html', 'training.html', 'shop.html', 'profile.html', 'settings.html', 'admin.html', 'support.html']) {
   const html = fs.readFileSync(path.join(root, file), 'utf8');
   const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   for (const [, attributes, source] of scripts) {
@@ -49,7 +49,9 @@ assert.match(main, /loadURL\(`\$\{APP_SCHEME\}:\/\/app\/login\.html`\)/);
 assert.match(preload, /ALLOWED_JSON/);
 assert.doesNotMatch(preload, /invoke: \(channel, \.\.\.args\) => ipcRenderer\.invoke\(channel, \.\.\.args\)/);
 assert.match(app, /active-tab-style/);
-assert.match(app, /Isolate each tab's lexical scope/);
+assert.match(app, /function cleanupActiveTab\(\)/);
+assert.match(app, /cache: 'force-cache'/);
+assert.match(app, /new Map\(\)/);
 assert.match(index, /apexCloud\.getCurrentUser\(\)/);
 assert.match(index, /window\.location\.replace\('login\.html'\)/);
 assert.match(index, /cloud-logout/);
@@ -64,6 +66,11 @@ assert.match(cloud, /token\?grant_type=refresh_token/);
 assert.match(cloud, /Authorization: 'Bearer '/);
 assert.match(cloud, /async function getProfile\(userId\)/);
 assert.match(cloud, /async function saveProfile\(fields\)/);
+assert.match(cloud, /async function getRole\(userId\)/);
+const support = fs.readFileSync(path.join(root, 'support.html'), 'utf8');
+assert.match(support, /support_tickets/);
+assert.match(support, /support_messages/);
+assert.match(support, /setInterval\(/);
 assert.doesNotMatch(training, /awaitFetch|İçerik yakında eklenecek|Yakında eklenecek/);
 assert.match(training, /rank-training\.json/);
 assert.match(training, /rank-selector/);
@@ -78,4 +85,21 @@ assert.match(news, /10 \* 60 \* 1000/);
 assert.match(main, /ISteamNews\/GetNewsForApp/);
 assert.match(news, /Örnek haber gösterilmiyor/);
 
-console.log(`Apex Genesis smoke tests passed: ${requiredFiles.length} required files, 8 JSON files, 15 locale options, six rank tracks, Electron security baseline, tab loading, and news refresh checks.`);
+const migration = fs.readFileSync(path.join(root, 'supabase/migrations/20261017010000_roles_support_performance.sql'), 'utf8');
+assert.match(migration, /alter table public\.support_tickets enable row level security/i);
+assert.match(migration, /alter table public\.support_messages enable row level security/i);
+assert.match(migration, /create or replace function public\.protect_profile_rank/i);
+assert.match(migration, /public\.is_admin\(\) and owner_id = \(select auth\.uid\(\)\)/);
+assert.match(migration, /Owner manages staff roles/);
+assert.match(migration, /alter publication supabase_realtime add table public\.support_tickets/);
+assert.match(migration, /alter publication supabase_realtime add table public\.support_messages/);
+const shop = JSON.parse(fs.readFileSync(path.join(root, 'data/shop.json'), 'utf8'));
+assert.ok(shop.every(item => !/[ÃÅÄâ€�]/.test(item.name + item.description)), 'Desktop shop text must not contain mojibake');
+assert.match(migration, /set description = 'Topluluk başlangıç rozeti\.'/);
+assert.ok(fs.existsSync(path.join(root, 'GPT.md')), 'Project handoff GPT.md must exist');
+const webApp = fs.readFileSync(path.join(root, 'frontend/src/App.jsx'), 'utf8');
+assert.match(webApp, /lazy\(/, 'Web routes should be lazy-loaded for faster initial render');
+const supportPage = fs.readFileSync(path.join(root, 'frontend/src/pages/Support.jsx'), 'utf8');
+assert.match(supportPage, /postgres_changes/, 'Web support should subscribe to live database changes');
+
+console.log(`Apex Genesis smoke tests passed: ${requiredFiles.length} required files, 8 JSON files, 15 locale options, six rank tracks, Electron security baseline, lazy routes, UTF-8 shop text, support/RLS guardrails, project handoff, and news refresh checks.`);

@@ -1,91 +1,103 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex Genesis</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <style>body{visibility:hidden}.sidebar-account{display:grid;gap:8px;padding:16px;border-top:1px solid #27332f;margin-top:auto}.sidebar-account span{color:#9fb3aa;font-size:.8rem;overflow-wrap:anywhere}.sidebar-account button{border:1px solid #35443e;border-radius:7px;background:#151d19;color:#eaf3ee;padding:9px;cursor:pointer;font-weight:700}.cloud-warning{padding:18px;border:1px solid #6b4930;border-radius:10px;background:#261b13;color:#ffe1bd;line-height:1.6}</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b100e">
+  <title>Apex Genesis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body{visibility:hidden}
+    .sidebar-account{display:grid;gap:8px;padding:16px;border-top:1px solid #27332f;margin-top:auto}
+    .sidebar-account span{color:#9fb3aa;font-size:.8rem;overflow-wrap:anywhere}
+    .sidebar-account button{border:1px solid #35443e;border-radius:7px;background:#151d19;color:#eaf3ee;padding:9px;cursor:pointer;font-weight:700}
+    .cloud-warning{padding:18px;border:1px solid #6b4930;border-radius:10px;background:#261b13;color:#ffe1bd;line-height:1.6}
+    .tab-btn[hidden]{display:none!important}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <aside class="sidebar">
-            <header><h1>Apex Genesis</h1></header>
-            <nav class="menu">
-                <button data-tab="dashboard" class="tab-btn active">Dashboard</button>
-                <button data-tab="teams" class="tab-btn">Takımlar</button>
-                <button data-tab="players" class="tab-btn">Oyuncular</button>
-                <button data-tab="tournaments" class="tab-btn">Turnuvalar</button>
-                <button data-tab="news" class="tab-btn">RL News</button>
-                <button data-tab="training" class="tab-btn">Antrenman</button>
-                <button data-tab="shop" class="tab-btn">Mağaza</button>
-                <button data-tab="profile" class="tab-btn">Profil</button>
-                <button data-tab="settings" class="tab-btn">Ayarlar</button>
-                <button data-tab="admin" class="tab-btn">Yönetim</button>
-            </nav>
-            <div class="sidebar-account">
-                <span id="sidebar-account-name">Çevrim içi hesap</span>
-                <button id="cloud-logout" type="button">Güvenli çıkış</button>
-            </div>
-        </aside>
-        <main class="content" id="content"></main>
-    </div>
-    <script>
-        window.escapeHTML = function (value) {
-            return String(value ?? '').replace(/[&<>"']/g, character => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-            })[character]);
-        };
-        window.safeHttpUrl = function (value) {
-            try {
-                const url = new URL(String(value ?? ''), window.location.href);
-                return ['https:', 'http:', 'apex:'].includes(url.protocol) ? url.href : '';
-            } catch { return ''; }
-        };
-    </script>
-    <script src="js/cloud.js"></script>
-    <script src="js/coins.js"></script>
-    <script src="js/i18n.js"></script>
-    <script src="js/app.js"></script>
-    <script>
-      (async () => {
-        const content = document.getElementById('content');
-        try {
-          const user = await window.apexCloud.getCurrentUser();
-          if (!user) {
+  <div class="container">
+    <aside class="sidebar">
+      <header><h1>Apex Genesis</h1></header>
+      <nav class="menu" aria-label="Ana gezinme">
+        <button data-tab="dashboard" class="tab-btn active">Ana sayfa</button>
+        <button data-tab="teams" class="tab-btn">Takımlar</button>
+        <button data-tab="players" class="tab-btn">Oyuncular</button>
+        <button data-tab="tournaments" class="tab-btn">Turnuvalar</button>
+        <button data-tab="news" class="tab-btn">Haberler ve güncellemeler</button>
+        <button data-tab="training" class="tab-btn">Antrenman</button>
+        <button data-tab="shop" class="tab-btn">Mağaza</button>
+        <button data-tab="profile" class="tab-btn">Profil</button>
+        <button data-tab="support" class="tab-btn">Destek merkezi</button>
+        <button data-tab="settings" class="tab-btn">Ayarlar</button>
+        <button data-tab="admin" id="admin-nav-tab" class="tab-btn">Yönetim</button>
+      </nav>
+      <div class="sidebar-account">
+        <span id="sidebar-account-name">Çevrim içi hesap</span>
+        <button id="cloud-logout" type="button">Güvenli çıkış</button>
+      </div>
+    </aside>
+    <main class="content" id="content"></main>
+  </div>
+  <script>
+    window.escapeHTML = function (value) {
+      return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[character]);
+    };
+    window.safeHttpUrl = function (value) {
+      try {
+        const url = new URL(String(value ?? ''), window.location.href);
+        return ['https:', 'http:', 'apex:'].includes(url.protocol) ? url.href : '';
+      } catch { return ''; }
+    };
+  </script>
+  <script src="js/cloud.js"></script>
+  <script src="js/coins.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (async () => {
+      const content = document.getElementById('content');
+      try {
+        const user = await window.apexCloud.getCurrentUser();
+        if (!user) { window.location.replace('login.html'); return; }
+        const cloudProfile = await window.apexCloud.getProfile(user.id);
+        const role = await window.apexCloud.getRole(user.id);
+        const adminButton = document.getElementById('admin-nav-tab');
+        if (adminButton && role === 'member') adminButton.hidden = true;
+        const username = String(cloudProfile?.username || user.user_metadata?.username || user.email?.split('@')[0] || 'Oyuncu');
+        localStorage.setItem('apexGenesisLoggedIn', 'true');
+        localStorage.setItem('apexGenesisUsername', username);
+        localStorage.setItem('apexGenesisProfileReady', 'true');
+        if (window.coinAPI) window.coinAPI.updateProfile({
+          username, bio: cloudProfile?.bio || '', avatar: cloudProfile?.avatar_url || '',
+          rocketLeagueRank: cloudProfile?.rocket_league_rank || 'Unranked'
+        });
+        document.getElementById('sidebar-account-name').textContent = '@' + username + ' · ' + (role === 'owner' ? 'Owner' : role === 'admin' ? 'Admin' : 'Member');
+        document.getElementById('cloud-logout').addEventListener('click', async event => {
+          const button = event.currentTarget;
+          button.disabled = true;
+          button.textContent = 'Çıkış yapılıyor…';
+          try { await window.apexCloud.signOut(); }
+          catch (error) { console.error('Cloud sign-out failed:', error); }
+          finally {
+            localStorage.removeItem('apexGenesisLoggedIn');
+            localStorage.removeItem('apexGenesisProfileReady');
             window.location.replace('login.html');
-            return;
           }
-          const cloudProfile = await window.apexCloud.getProfile(user.id);
-          const username = String(cloudProfile?.username || user.user_metadata?.username || user.email?.split('@')[0] || 'Oyuncu');
-          localStorage.setItem('apexGenesisLoggedIn', 'true');
-          localStorage.setItem('apexGenesisUsername', username);
-          localStorage.setItem('apexGenesisProfileReady', 'true');
-          if (window.coinAPI) window.coinAPI.updateProfile({ username, bio: cloudProfile?.bio || '', avatar: cloudProfile?.avatar_url || '', rocketLeagueRank: cloudProfile?.rocket_league_rank || 'Unranked' });
-          document.getElementById('sidebar-account-name').textContent = '@' + username;
-          document.getElementById('cloud-logout').addEventListener('click', async event => {
-            const button = event.currentTarget;
-            button.disabled = true;
-            button.textContent = 'Çıkış yapılıyor…';
-            try {
-              await window.apexCloud.signOut();
-            } catch (error) {
-              console.error('Cloud sign-out failed:', error);
-            } finally {
-              localStorage.removeItem('apexGenesisLoggedIn');
-              localStorage.removeItem('apexGenesisProfileReady');
-              window.location.replace('login.html');
-            }
-          });
-          document.body.style.visibility = 'visible';
-        } catch (error) {
-          console.error('Cloud session verification failed:', error);
-          document.body.style.visibility = 'visible';
-          content.innerHTML = '<section class="cloud-warning"><strong>Çevrim içi oturum doğrulanamadı.</strong><p>Bağlantını kontrol edip uygulamayı yeniden aç. Güvenlik için doğrulanmamış oturumla devam edilmiyor.</p><button id="retry-cloud-login" type="button">Giriş ekranına dön</button></section>';
-          document.getElementById('retry-cloud-login').addEventListener('click', () => window.location.replace('login.html'));
-        }
-      })();
-    </script>
+        });
+        document.body.style.visibility = 'visible';
+      } catch (error) {
+        console.error('Cloud session verification failed:', error);
+        document.body.style.visibility = 'visible';
+        content.innerHTML = '<section class="cloud-warning"><strong>Çevrim içi oturum doğrulanamadı.</strong><p>Bağlantını kontrol edip uygulamayı yeniden aç. Güvenlik için doğrulanmamış oturumla devam edilmiyor.</p><button id="retry-cloud-login" type="button">Giriş ekranına dön</button></section>';
+        document.getElementById('retry-cloud-login').addEventListener('click', () => window.location.replace('login.html'));
+      }
+    })();
+  </script>
 </body>
 </html>

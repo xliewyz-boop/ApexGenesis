@@ -696,3 +696,27 @@ input:focus, textarea:focus, select:focus { outline: 1px solid var(--primary-col
 .tab-load-error h2 { color:#ffb6ac; margin-bottom:12px; }
 .tab-load-error p { color:#d1aaa5; line-height:1.6; margin-bottom:18px; }
 .tab-load-error button { padding:10px 14px; border:0; border-radius:7px; background:var(--primary-color); color:#07110f; cursor:pointer; font-weight:700; }
+
+
+/* Performance and motion: keep effects transform/opacity-only and honor accessibility settings. */
+html { scroll-behavior: smooth; }
+#content { contain: layout style; }
+.tab-content { animation: ag-tab-in .22s ease-out both; }
+.tab-btn { transition: background-color .16s ease, color .16s ease, transform .16s ease; }
+.tab-btn:active { transform: scale(.985); }
+.shop-item, .news-card, .team-card, .player-card, .tournament-card, .mechanic-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 260px;
+}
+.scroll-reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition: opacity .38s ease var(--reveal-delay, 0ms), transform .38s cubic-bezier(.2,.7,.2,1) var(--reveal-delay, 0ms);
+}
+.scroll-reveal.is-revealed { opacity: 1; transform: translate3d(0,0,0); }
+.tab-enter { animation: ag-tab-in .22s ease-out both; }
+@keyframes ag-tab-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  .tab-content, .tab-enter, .scroll-reveal { animation: none !important; opacity: 1 !important; transform: none !important; transition: none !important; }
+}
